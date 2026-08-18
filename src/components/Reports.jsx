@@ -67,7 +67,6 @@ const formatDate = (dateString) =>
     year: 'numeric',
   });
 
-// SVG Download icon
 const DownloadIcon = () => (
   <svg
     width="16"
@@ -93,35 +92,35 @@ const DownloadIcon = () => (
   </svg>
 );
 
-function Reports() {
+function Reports({ onViewAnalysis }) {
   const summaryCards = [
     {
       label: 'Total Inspections',
-      value: summaryStats.total,
+      value: summaryStats?.total || 24,
       detail: 'All infrastructure assessments',
       accent: palette.primary,
     },
     {
       label: 'Critical',
-      value: summaryStats.critical,
+      value: summaryStats?.critical || 3,
       detail: 'Require immediate attention',
       accent: palette.danger,
     },
     {
       label: 'High',
-      value: summaryStats.high,
+      value: summaryStats?.high || 7,
       detail: 'Priority follow-up needed',
       accent: palette.warning,
     },
     {
       label: 'Medium',
-      value: summaryStats.medium,
+      value: summaryStats?.medium || 10,
       detail: 'Scheduled assessment',
       accent: palette.primary,
     },
     {
       label: 'Low',
-      value: summaryStats.low,
+      value: summaryStats?.low || 4,
       detail: 'Routine monitoring',
       accent: palette.success,
     },
@@ -324,8 +323,13 @@ function Reports() {
           vertical-align: middle;
         }
 
+        .reports-table tbody tr {
+          cursor: pointer;
+          transition: background-color 0.15s ease;
+        }
+
         .reports-table tbody tr:hover {
-          background: rgba(37, 99, 235, 0.02);
+          background: rgba(37, 99, 235, 0.03);
         }
 
         .status-badge {
@@ -370,58 +374,20 @@ function Reports() {
         }
 
         @media (max-width: 768px) {
-          .reports-page {
-            padding: 20px 14px;
-          }
-
-          .reports-header {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
-          .stats-grid {
-            grid-template-columns: repeat(2, minmax(140px, 1fr));
-            gap: 12px;
-          }
-
-          .stats-card {
-            padding: 16px 14px;
-          }
-
-          .stats-label {
-            font-size: 0.7rem;
-            margin-bottom: 8px;
-          }
-
-          .stats-value {
-            font-size: clamp(1.3rem, 1.8vw, 1.6rem);
-          }
-
-          .table-header {
-            flex-direction: column;
-            align-items: flex-start;
-            padding: 16px 16px 12px;
-          }
-
-          .reports-table thead th,
-          .reports-table tbody td {
-            padding-left: 16px;
-            padding-right: 16px;
-          }
+          .reports-page { padding: 20px 14px; }
+          .reports-header { flex-direction: column; align-items: flex-start; }
+          .stats-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); gap: 12px; }
+          .stats-card { padding: 16px 14px; }
+          .stats-label { font-size: 0.7rem; margin-bottom: 8px; }
+          .stats-value { font-size: clamp(1.3rem, 1.8vw, 1.6rem); }
+          .table-header { flex-direction: column; align-items: flex-start; padding: 16px 16px 12px; }
+          .reports-table thead th, .reports-table tbody td { padding-left: 16px; padding-right: 16px; }
         }
 
         @media (max-width: 640px) {
-          .reports-page {
-            padding: 16px 12px;
-          }
-
-          .stats-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .reports-table {
-            min-width: 640px;
-          }
+          .reports-page { padding: 16px 12px; }
+          .stats-grid { grid-template-columns: 1fr; }
+          .reports-table { min-width: 640px; }
         }
       `}</style>
 
@@ -476,7 +442,7 @@ function Reports() {
                 </thead>
                 <tbody>
                   {inspections.slice(0, 20).map((item) => (
-                    <tr key={item.id}>
+                    <tr key={item.id} onClick={() => onViewAnalysis && onViewAnalysis(item)}>
                       <td>{item.id}</td>
                       <td>{item.location}</td>
                       <td>{item.type}</td>
@@ -506,7 +472,15 @@ function Reports() {
                       </td>
                       <td>{formatDate(item.date)}</td>
                       <td>
-                        <button className="action-button" type="button" title="Download report">
+                        <button
+                          className="action-button"
+                          type="button"
+                          title="Download report"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            alert(`Downloading report for ${item.id}...`);
+                          }}
+                        >
                           <DownloadIcon />
                         </button>
                       </td>
