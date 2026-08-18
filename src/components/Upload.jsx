@@ -74,7 +74,16 @@ function Upload() {
     // Later this will connect to the AI API
 
     setTimeout(() => {
-      navigate("/analysis");
+      navigate("/analysis", {
+        state: {
+          image: preview,
+          fileName: selectedFile.name,
+          location,
+          date,
+          infrastructureType,
+          description,
+        },
+      });
     }, 1200);
   };
 

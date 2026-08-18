@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const palette = {
   primary: '#2563EB',
@@ -23,25 +23,23 @@ const severityConfig = {
 
 export default function AIAnalysisResults({ inspection }) {
   const navigate = useNavigate();
-  const [selectedFile, setSelectedFile] = useState(null);
+  const locationState = useLocation();
+
+  const uploadedImage = locationState.state?.image;
+  const fileName = locationState.state?.fileName;
+  const uploadLocation = locationState.state?.location;
+  const uploadDate = locationState.state?.date;
 
   const data = inspection || {
-    id: 'INS-101',
-    location: 'Chennai Central',
-    type: 'Bridge',
-    severity: 'High',
-    priority: 'High',
-    date: '2026-08-18',
+    id: "INS-101",
+    location: uploadLocation || "Chennai Central",
+    type: "Bridge",
+    severity: "High",
+    priority: "High",
+    date: uploadDate || "2026-08-18",
   };
-
   const severity = data.severity || 'High';
   const severityInfo = severityConfig[severity] || severityConfig.High;
-
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0].name);
-    }
-  };
 
   return (
     <>
@@ -124,84 +122,8 @@ export default function AIAnalysisResults({ inspection }) {
           gap: 0;
         }
 
-        .upload-panel {
-          padding: 28px;
-          border-right: 1px solid rgba(17, 24, 39, 0.06);
-          display: flex;
-          flex-direction: column;
-        }
-
         .details-panel {
           padding: 28px;
-        }
-
-        .section-label {
-          display: block;
-          margin-bottom: 12px;
-          color: ${palette.muted};
-          font-size: 0.76rem;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.05em;
-        }
-
-        .upload-dropzone {
-          border: 2px dashed rgba(37, 99, 235, 0.3);
-          background: rgba(37, 99, 235, 0.02);
-          border-radius: ${palette.radius}px;
-          padding: 40px 20px;
-          text-align: center;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          position: relative;
-        }
-
-        .upload-dropzone:hover {
-          border-color: ${palette.primary};
-          background: rgba(37, 99, 235, 0.05);
-        }
-
-        .file-input {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          opacity: 0;
-          cursor: pointer;
-        }
-
-        .upload-icon {
-          width: 48px;
-          height: 48px;
-          color: ${palette.primary};
-          margin-bottom: 12px;
-        }
-
-        .upload-text {
-          font-size: 1rem;
-          font-weight: 600;
-          color: ${palette.text};
-          margin-bottom: 4px;
-        }
-
-        .upload-subtext {
-          font-size: 0.82rem;
-          color: ${palette.muted};
-        }
-
-        .selected-file-badge {
-          margin-top: 12px;
-          font-size: 0.85rem;
-          font-weight: 600;
-          color: ${palette.primary};
-          background: rgba(37, 99, 235, 0.1);
-          padding: 6px 12px;
-          border-radius: 6px;
         }
 
         .details-title {
@@ -297,9 +219,63 @@ export default function AIAnalysisResults({ inspection }) {
           font-weight: 600;
         }
 
+        .analysis-image-section {
+          margin-bottom: 24px;
+        }
+
+        .analysis-image-card {
+          display: flex;
+          gap: 24px;
+          align-items: center;
+
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 20px;
+        }
+
+        .analysis-image {
+          width: 280px;
+          height: 190px;
+          object-fit: cover;
+          border-radius: 10px;
+          border: 1px solid #e5e7eb;
+        }
+
+        .no-image {
+          width: 280px;
+          height: 190px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          background: #f3f4f6;
+          border-radius: 10px;
+          color: #6b7280;
+        }
+
+        .image-info h3 {
+          margin: 0 0 12px;
+          font-size: 17px;
+          color: #111827;
+        }
+
+        .image-info p {
+          margin: 7px 0;
+          font-size: 13px;
+          color: #6b7280;
+        }
+
         @media (max-width: 850px) {
-          .analysis-grid { grid-template-columns: 1fr; }
-          .upload-panel { border-right: none; border-bottom: 1px solid rgba(17, 24, 39, 0.06); }
+          .analysis-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .analysis-image-section {
+            border-right: none;
+            border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+          }
+
         }
       `}</style>
 
@@ -316,7 +292,7 @@ export default function AIAnalysisResults({ inspection }) {
               </button>
               <h1 className="analysis-title">AI Analysis Results</h1>
               <p className="analysis-subtitle">
-                Upload image or review automated structural inspection evaluation
+                Review automated structural inspection evaluation
               </p>
             </div>
             <div className="inspection-id">Inspection ID: {data.id}</div>
@@ -325,38 +301,34 @@ export default function AIAnalysisResults({ inspection }) {
           <section className="analysis-card">
             <div className="analysis-grid">
               
-              {/* UPLOAD ZONE */}
-              <div className="upload-panel">
-                <span className="section-label">Upload Inspection Media</span>
-                <div className="upload-dropzone">
-                  <input
-                    type="file"
-                    className="file-input"
-                    accept="image/*"
-                    onChange={handleFileChange}
+            {/* Uploaded Image */}
+            <div className="analysis-image-section">
+              <div className="analysis-image-card">
+                {uploadedImage ? (
+                  <img
+                    src={uploadedImage}
+                    alt="Uploaded infrastructure"
+                    className="analysis-image"
                   />
-                  <svg
-                    className="upload-icon"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="1.5"
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <div className="upload-text">Upload your image here</div>
-                  <div className="upload-subtext">PNG, JPG or WEBP up to 10MB</div>
-                  {selectedFile && (
-                    <div className="selected-file-badge">
-                      Selected: {selectedFile}
-                    </div>
-                  )}
+                ) : (
+                  <div className="no-image">
+                    No image available
+                  </div>
+                )}
+
+                <div className="image-info">
+                  <h3>{fileName || "Infrastructure Image"}</h3>
+
+                  <p>
+                    📍 {uploadLocation || "Location not specified"}
+                  </p>
+
+                  <p>
+                    📅 {uploadDate || "Date not specified"}
+                  </p>
                 </div>
               </div>
+            </div>
 
               {/* DETAILS PANEL */}
               <div className="details-panel">
