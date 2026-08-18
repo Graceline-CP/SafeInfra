@@ -1,5 +1,5 @@
 import React from 'react';
-import { inspections, summaryStats } from '../data/mockData';
+import { reports, dashboardStats } from '../data/mockData';
 
 const palette = {
   primary: '#2563EB',
