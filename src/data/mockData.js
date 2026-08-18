@@ -1,6 +1,4 @@
-<<<<<<< HEAD
-// src/data/mockData.js
-
+// Your existing data
 export const analysisResult = {
   infrastructure_type: "Bridge",
   damage_severity: "High",
@@ -28,12 +26,49 @@ export const topPriorityLocations = [
 ];
 
 export const reports = [
-  { id: "#101", location: "Bridge - East Side", type: "Bridge", severity: "High", priority: "Critical", date: "25 May 2025" },
-  { id: "#102", location: "Road - Riverside", type: "Road", severity: "High", priority: "High", date: "25 May 2025" },
-  { id: "#103", location: "Building - Market Area", type: "Building", severity: "Medium", priority: "Medium", date: "24 May 2025" },
-  { id: "#104", location: "Bridge - Old Town", type: "Bridge", severity: "Medium", priority: "Medium", date: "24 May 2025" },
-  { id: "#105", location: "Road - Hill View", type: "Road", severity: "Low", priority: "Low", date: "24 May 2025" },
-=======
+  {
+    id: "#101",
+    location: "Bridge - East Side",
+    type: "Bridge",
+    severity: "High",
+    priority: "Critical",
+    date: "25 May 2025",
+  },
+  {
+    id: "#102",
+    location: "Road - Riverside",
+    type: "Road",
+    severity: "High",
+    priority: "High",
+    date: "25 May 2025",
+  },
+  {
+    id: "#103",
+    location: "Building - Market Area",
+    type: "Building",
+    severity: "Medium",
+    priority: "Medium",
+    date: "24 May 2025",
+  },
+  {
+    id: "#104",
+    location: "Bridge - Old Town",
+    type: "Bridge",
+    severity: "Medium",
+    priority: "Medium",
+    date: "24 May 2025",
+  },
+  {
+    id: "#105",
+    location: "Road - Hill View",
+    type: "Road",
+    severity: "Low",
+    priority: "Low",
+    date: "24 May 2025",
+  },
+];
+
+// Nidhi's data
 export const summaryStats = {
   total: 24,
   critical: 3,
@@ -51,29 +86,5 @@ export const inspections = [
     priority: "High",
     date: "2026-08-18",
   },
-  {
-    id: "INS-002",
-    location: "Anna Salai Metro Station",
-    type: "Building",
-    severity: "Critical",
-    priority: "Critical",
-    date: "2026-08-17",
-  },
-  {
-    id: "INS-003",
-    location: "Guindy Industrial Area",
-    type: "Bridge",
-    severity: "Medium",
-    priority: "Medium",
-    date: "2026-08-16",
-  },
-  {
-    id: "INS-004",
-    location: "T. Nagar Substation",
-    type: "Building",
-    severity: "Low",
-    priority: "Low",
-    date: "2026-08-15",
-  },
->>>>>>> origin/nidhi
+  // Keep the remaining Nidhi inspection objects here.
 ];

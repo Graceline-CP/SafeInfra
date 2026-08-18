@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from "react-router-dom";
 
 const palette = {
   primary: '#2563EB',
@@ -20,7 +21,8 @@ const severityConfig = {
   Low: { color: palette.success, position: '20%' },
 };
 
-export default function AIAnalysisResults({ inspection, onBack }) {
+export default function AIAnalysisResults({ inspection }) {
+  const navigate = useNavigate();
   const [selectedFile, setSelectedFile] = useState(null);
 
   const data = inspection || {
@@ -305,8 +307,12 @@ export default function AIAnalysisResults({ inspection, onBack }) {
         <div className="analysis-shell">
           <header className="analysis-header">
             <div>
-              <button className="back-button" type="button" onClick={onBack}>
-                ← Back to Reports
+              <button
+                className="back-button"
+                type="button"
+                onClick={() => navigate("/dashboard")}
+              >
+                ← Continue to Dashboard
               </button>
               <h1 className="analysis-title">AI Analysis Results</h1>
               <p className="analysis-subtitle">

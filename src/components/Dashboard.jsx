@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { useNavigate } from "react-router-dom";
 const palette = {
   primary: '#2563EB',
   success: '#059669',
@@ -84,6 +84,7 @@ const priorityLocations = [
 ];
 
 function Dashboard() {
+  const navigate = useNavigate();
   return (
     <>
       <style>{`
@@ -447,7 +448,31 @@ function Dashboard() {
         }
 
         /* Responsive */
+        /* Reports Button */
 
+        .dashboard-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+        }
+
+        .reports-button {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        background: #2563EB;
+        color: white;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
+        transition: all 0.2s ease;
+        }
+
+        .reports-button:hover {
+        background: #1D4ED8;
+        transform: translateY(-1px);
+        }
         @media (max-width: 900px) {
           .dashboard-grid {
             grid-template-columns: 1fr;
@@ -630,6 +655,17 @@ function Dashboard() {
             </article>
 
           </section>
+
+          {/* Reports Button */}
+          <div className="dashboard-actions">
+            <button
+              type="button"
+              className="reports-button"
+              onClick={() => navigate("/reports")}
+            >
+              View Reports →
+            </button>
+          </div>
 
         </div>
       </div>

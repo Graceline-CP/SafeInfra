@@ -1,5 +1,6 @@
 import React from 'react';
 import { reports, dashboardStats } from '../data/mockData';
+import { useNavigate } from "react-router-dom";
 
 const palette = {
   primary: '#2563EB',
@@ -93,34 +94,35 @@ const DownloadIcon = () => (
 );
 
 function Reports({ onViewAnalysis }) {
+  const navigate = useNavigate();
   const summaryCards = [
     {
       label: 'Total Inspections',
-      value: summaryStats?.total || 24,
+      value: reports.length,
       detail: 'All infrastructure assessments',
       accent: palette.primary,
     },
     {
       label: 'Critical',
-      value: summaryStats?.critical || 3,
+      value: dashboardStats.critical,
       detail: 'Require immediate attention',
       accent: palette.danger,
     },
     {
       label: 'High',
-      value: summaryStats?.high || 7,
+      value: dashboardStats.high,
       detail: 'Priority follow-up needed',
       accent: palette.warning,
     },
     {
       label: 'Medium',
-      value: summaryStats?.medium || 10,
+      value: dashboardStats.medium,
       detail: 'Scheduled assessment',
       accent: palette.primary,
     },
     {
       label: 'Low',
-      value: summaryStats?.low || 4,
+      value: dashboardStats.low,
       detail: 'Routine monitoring',
       accent: palette.success,
     },
@@ -402,7 +404,11 @@ function Reports({ onViewAnalysis }) {
               <button className="ghost-button" type="button">
                 Export
               </button>
-              <button className="primary-button" type="button">
+              <button
+                className="primary-button"
+                type="button"
+                onClick={() => navigate("/upload")}
+              >
                 New report
               </button>
             </div>
@@ -441,7 +447,7 @@ function Reports({ onViewAnalysis }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {inspections.slice(0, 20).map((item) => (
+                  {reports.slice(0, 20).map((item) => (
                     <tr key={item.id} onClick={() => onViewAnalysis && onViewAnalysis(item)}>
                       <td>{item.id}</td>
                       <td>{item.location}</td>
