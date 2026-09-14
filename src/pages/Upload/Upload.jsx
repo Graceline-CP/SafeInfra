@@ -54,29 +54,59 @@ function Upload() {
   // -----------------------------
   // SUBMIT
   // -----------------------------
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  if (!selectedFile) {
+    alert("Please upload an infrastructure image.");
+    return;
+  }
 
-    if (!selectedFile) {
-      alert("Please upload an infrastructure image.");
-      return;
+  if (!location || !date) {
+    alert("Please enter location and date.");
+    return;
+  }
+
+  setLoading(true);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    const response = await fetch("http://127.0.0.1:8000/analyze", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error("Analysis failed");
     }
 
-    if (!location || !date) {
-      alert("Please enter location and date.");
-      return;
-    }
+    const result = await response.json();
 
-    setLoading(true);
+    console.log("AI Analysis Result:", result);
 
-    // Temporary frontend simulation
-    // Later this will connect to the AI API
+    // Store the AI result temporarily so the Analysis page can use it
+    localStorage.setItem(
+      "safeinfra_analysis",
+      JSON.stringify({
+        infrastructureType: infrastructureType,
+        location: location,
+        date: date,
+        description: description,
+        image: preview,
+        ...result,
+      })
+    );
 
-    setTimeout(() => {
-      navigate("/analysis");
-    }, 1200);
-  };
+    navigate("/analysis");
+  } catch (error) {
+    console.error("Backend error:", error);
+    alert("Unable to connect to SafeInfra AI backend. Please make sure the backend is running.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#F1F5F9]">
