@@ -1,0 +1,11 @@
+CaseStudy,DerivedSeverity,Evidence,Source
+S_A,Low,Plaster/surface damage; structural frame reported unaffected,2022 Ahr Structural Damage Report
+S_B,Low,Minor plaster/debris-related damage; no documented major structural failure,2022 Ahr Structural Damage Report
+S_C,Critical,Collapsed end wall / major structural failure,2022 Ahr Structural Damage Report
+D_A,High,Partial roof/structural damage with significant façade damage,2022 Ahr Structural Damage Report
+D_E,Critical,Major façade/floor collapse,2022 Ahr Structural Damage Report
+D_F,Critical,Part of building destroyed/collapsed,2022 Ahr Structural Damage Report
+D_G,High,Flood impact with structural piers knocked out,2022 Ahr Structural Damage Report
+I_A,Critical,Major foundation/structural collapse,2022 Ahr Structural Damage Report
+I_C,Critical,Major structural/foundation failure,2022 Ahr Structural Damage Report
+A_B,Medium,Outer façade/leaf failure while main structural masonry remained intact,2022 Ahr Structural Damage Report
