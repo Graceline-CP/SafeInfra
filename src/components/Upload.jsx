@@ -99,6 +99,7 @@ const handleSubmit = async (e) => {
       })
     );
 
+<<<<<<< HEAD:src/pages/Upload/Upload.jsx
     navigate("/analysis");
   } catch (error) {
     console.error("Backend error:", error);
@@ -107,6 +108,21 @@ const handleSubmit = async (e) => {
     setLoading(false);
   }
 };
+=======
+    setTimeout(() => {
+      navigate("/analysis", {
+        state: {
+          image: preview,
+          fileName: selectedFile.name,
+          location,
+          date,
+          infrastructureType,
+          description,
+        },
+      });
+    }, 1200);
+  };
+>>>>>>> 2f1fd3838b02f8d71e09e19872198d691d9ac303:src/components/Upload.jsx
 
   return (
     <div className="min-h-screen bg-[#F1F5F9]">
