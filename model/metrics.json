@@ -1,0 +1,26 @@
+{
+  "accuracy": 0.5789,
+  "per_class": {
+    "Critical": {
+      "precision": 0.7648,
+      "recall": 0.7495,
+      "f1": 0.7571
+    },
+    "High": {
+      "precision": 0.4539,
+      "recall": 0.159,
+      "f1": 0.2355
+    },
+    "Low": {
+      "precision": 0.6331,
+      "recall": 0.5022,
+      "f1": 0.5601
+    },
+    "Medium": {
+      "precision": 0.4954,
+      "recall": 0.7652,
+      "f1": 0.6014
+    }
+  },
+  "confusion_matrix_image": "confusion_matrix.png"
+}
