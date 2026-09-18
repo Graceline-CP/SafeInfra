@@ -3,3 +3,5 @@ venv/
 data/
 model/severity_model.pt
 **/node_modules
+__pycache__/
+backend/__pycache__/
