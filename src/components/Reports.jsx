@@ -1,6 +1,8 @@
 import React from 'react';
 import { reports, dashboardStats } from '../data/mockData';
 import { useNavigate } from "react-router-dom";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const palette = {
   primary: '#2563EB',
@@ -95,6 +97,89 @@ const DownloadIcon = () => (
 
 function Reports({ onViewAnalysis }) {
   const navigate = useNavigate();
+  const handleExport = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("SAFEINFRA", 14, 20);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text("Infrastructure Safety Intelligence - Inspection Reports", 14, 27);
+
+    autoTable(doc, {
+      startY: 34,
+      head: [["ID", "Location", "Type", "Severity", "Priority", "Date"]],
+      body: reports.map((r) => [
+        r.id,
+        r.location,
+        r.type,
+        r.severity,
+        r.priority,
+        formatDate(r.date),
+      ]),
+      headStyles: { fillColor: [37, 99, 235] },
+      styles: { fontSize: 9 },
+    });
+
+    doc.save("safeinfra_reports.pdf");
+  };
+    const handleDownloadReport = (report) => {
+      const doc = new jsPDF();
+
+      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold");
+      doc.text("SAFEINFRA", 20, 25);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text("Infrastructure Safety Intelligence", 20, 32);
+
+      doc.line(20, 38, 190, 38);
+
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text("INSPECTION REPORT", 20, 55);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+
+      doc.text(`Report ID: ${report.id}`, 20, 68);
+      doc.text(`Location: ${report.location}`, 20, 80);
+      doc.text(`Type: ${report.type}`, 20, 92);
+      doc.text(`Severity: ${report.severity}`, 20, 104);
+      doc.text(`Priority: ${report.priority}`, 20, 116);
+      doc.text(`Inspection Date: ${formatDate(report.date)}`, 20, 128);
+
+      doc.line(20, 140, 190, 140);
+
+      doc.setFontSize(13);
+      doc.setFont("helvetica", "bold");
+      doc.text("AI Assessment", 20, 155);
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        "This report contains the infrastructure safety assessment",
+        20,
+        168
+      );
+      doc.text(
+        "recorded by the SafeInfra inspection system.",
+        20,
+        177
+      );
+
+      doc.line(20, 260, 190, 260);
+
+      doc.setFontSize(9);
+      doc.text("Safe infrastructure. Smarter decisions.", 20, 272);
+      doc.text("SAFEINFRA", 160, 272);
+
+      doc.save(`safeinfra_report_${report.id}.pdf`);
+    };
+  
   const summaryCards = [
     {
       label: 'Total Inspections',
@@ -401,7 +486,11 @@ function Reports({ onViewAnalysis }) {
             </div>
 
             <div className="reports-actions">
-              <button className="ghost-button" type="button">
+              <button
+                className="ghost-button"
+                type="button"
+                onClick={handleExport}
+              >
                 Export
               </button>
               <button
@@ -484,7 +573,7 @@ function Reports({ onViewAnalysis }) {
                           title="Download report"
                           onClick={(e) => {
                             e.stopPropagation();
-                            alert(`Downloading report for ${item.id}...`);
+                            handleDownloadReport(item);
                           }}
                         >
                           <DownloadIcon />
