@@ -1,50 +1,63 @@
-import React, { useState } from 'react';
-import { useLocation, useNavigate } from "react-router-dom";
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
 const palette = {
-  primary: '#2563EB',
-  success: '#059669',
-  warning: '#D97706',
-  danger: '#DC2626',
-  background: '#F9FAFB',
-  card: '#FFFFFF',
-  text: '#111827',
-  muted: '#6B7280',
+  primary: "#2563EB",
+  success: "#059669",
+  warning: "#D97706",
+  danger: "#DC2626",
+  background: "#F9FAFB",
+  card: "#FFFFFF",
+  text: "#111827",
+  muted: "#6B7280",
   radius: 12,
   inputRadius: 8,
 };
 
 const severityConfig = {
-  Critical: { color: palette.danger, position: '92%' },
-  High: { color: palette.danger, position: '75%' },
-  Medium: { color: palette.warning, position: '50%' },
-  Low: { color: palette.success, position: '20%' },
+  Critical: { color: palette.danger, position: "92%" },
+  High: { color: palette.danger, position: "75%" },
+  Medium: { color: palette.warning, position: "50%" },
+  Low: { color: palette.success, position: "20%" },
 };
 
 export default function AIAnalysisResults({ inspection }) {
   const navigate = useNavigate();
-  const locationState = useLocation();
 
-  const uploadedImage = locationState.state?.image;
-  const fileName = locationState.state?.fileName;
-  const uploadLocation = locationState.state?.location;
-  const uploadDate = locationState.state?.date;
+  // Read the result saved by Upload.jsx
+  const savedAnalysis = JSON.parse(
+    localStorage.getItem("safeinfra_analysis") || "null"
+  );
 
+  const uploadedImage = savedAnalysis?.image;
+  const uploadLocation = savedAnalysis?.location;
+  const uploadDate = savedAnalysis?.date;
+
+  // Real result returned by FastAPI
   const data = inspection || {
-    id: "INS-101",
-    location: uploadLocation || "Chennai Central",
-    type: "Bridge",
-    severity: "High",
-    priority: "High",
-    date: uploadDate || "2026-08-18",
+    id: "SAFEINFRA-" + Date.now(),
+    location: uploadLocation || "Not specified",
+    type: savedAnalysis?.infrastructureType || "Not specified",
+    severity: savedAnalysis?.damage_severity || "Not available",
+    confidence: savedAnalysis?.confidence_score ?? 0,
+    priority: savedAnalysis?.priority || "Unknown",
+    date: uploadDate || "Not specified",
   };
-  const severity = data.severity || 'High';
-  const severityInfo = severityConfig[severity] || severityConfig.High;
+
+  const severity = data.severity;
+
+  const severityInfo =
+    severityConfig[severity] || {
+      color: palette.muted,
+      position: "50%",
+    };
 
   return (
     <>
       <style>{`
-        * { box-sizing: border-box; }
+        * {
+          box-sizing: border-box;
+        }
 
         .analysis-page {
           min-height: 100vh;
@@ -169,7 +182,12 @@ export default function AIAnalysisResults({ inspection }) {
           position: relative;
           height: 10px;
           border-radius: 999px;
-          background: linear-gradient(90deg, #059669 0%, #D97706 50%, #DC2626 100%);
+          background: linear-gradient(
+            90deg,
+            #059669 0%,
+            #D97706 50%,
+            #DC2626 100%
+          );
           margin: 12px 0 8px;
         }
 
@@ -227,7 +245,6 @@ export default function AIAnalysisResults({ inspection }) {
           display: flex;
           gap: 24px;
           align-items: center;
-
           background: white;
           border: 1px solid #e5e7eb;
           border-radius: 12px;
@@ -248,7 +265,6 @@ export default function AIAnalysisResults({ inspection }) {
           display: flex;
           align-items: center;
           justify-content: center;
-
           background: #f3f4f6;
           border-radius: 10px;
           color: #6b7280;
@@ -275,12 +291,12 @@ export default function AIAnalysisResults({ inspection }) {
             border-right: none;
             border-bottom: 1px solid rgba(17, 24, 39, 0.06);
           }
-
         }
       `}</style>
 
       <main className="analysis-page">
         <div className="analysis-shell">
+
           <header className="analysis-header">
             <div>
               <button
@@ -290,99 +306,177 @@ export default function AIAnalysisResults({ inspection }) {
               >
                 ← Continue to Dashboard
               </button>
-              <h1 className="analysis-title">AI Analysis Results</h1>
+
+              <h1 className="analysis-title">
+                AI Analysis Results
+              </h1>
+
               <p className="analysis-subtitle">
                 Review automated structural inspection evaluation
               </p>
             </div>
-            <div className="inspection-id">Inspection ID: {data.id}</div>
+
+            <div className="inspection-id">
+              Inspection ID: {data.id}
+            </div>
           </header>
 
           <section className="analysis-card">
+
             <div className="analysis-grid">
-              
-            {/* Uploaded Image */}
-            <div className="analysis-image-section">
-              <div className="analysis-image-card">
-                {uploadedImage ? (
-                  <img
-                    src={uploadedImage}
-                    alt="Uploaded infrastructure"
-                    className="analysis-image"
-                  />
-                ) : (
-                  <div className="no-image">
-                    No image available
+
+              {/* Uploaded Image */}
+              <div className="analysis-image-section">
+                <div className="analysis-image-card">
+
+                  {uploadedImage ? (
+                    <img
+                      src={uploadedImage}
+                      alt="Uploaded infrastructure"
+                      className="analysis-image"
+                    />
+                  ) : (
+                    <div className="no-image">
+                      No image available
+                    </div>
+                  )}
+
+                  <div className="image-info">
+
+                    <h3>
+                      Infrastructure Image
+                    </h3>
+
+                    <p>
+                      📍 {uploadLocation || "Location not specified"}
+                    </p>
+
+                    <p>
+                      📅 {uploadDate || "Date not specified"}
+                    </p>
+
                   </div>
-                )}
 
-                <div className="image-info">
-                  <h3>{fileName || "Infrastructure Image"}</h3>
-
-                  <p>
-                    📍 {uploadLocation || "Location not specified"}
-                  </p>
-
-                  <p>
-                    📅 {uploadDate || "Date not specified"}
-                  </p>
                 </div>
               </div>
-            </div>
 
               {/* DETAILS PANEL */}
               <div className="details-panel">
-                <h2 className="details-title">Analysis Summary</h2>
+
+                <h2 className="details-title">
+                  Analysis Summary
+                </h2>
 
                 <div className="info-grid">
+
                   <div className="info-item">
-                    <span className="info-label">Infrastructure Type</span>
-                    <span className="info-value">{data.type}</span>
+                    <span className="info-label">
+                      Infrastructure Type
+                    </span>
+
+                    <span className="info-value">
+                      {data.type}
+                    </span>
                   </div>
+
                   <div className="info-item">
-                    <span className="info-label">Damage Severity</span>
-                    <span className="info-value" style={{ color: severityInfo.color }}>
+                    <span className="info-label">
+                      Damage Severity
+                    </span>
+
+                    <span
+                      className="info-value"
+                      style={{
+                        color: severityInfo.color,
+                      }}
+                    >
                       {severity}
                     </span>
                   </div>
                   <div className="info-item">
-                    <span className="info-label">Confidence Score</span>
-                    <span className="info-value">87%</span>
-                  </div>
+                    <span className="info-label">
+                      Priority
+                      </span>
+                      <span className="info-value">
+                        {data.priority}
+                        </span>
+                        </div>
+
                   <div className="info-item">
-                    <span className="info-label">Date</span>
-                    <span className="info-value">{data.date}</span>
+                    <span className="info-label">
+                      Confidence Score
+                    </span>
+
+                    <span className="info-value">
+                      {data.confidence}%
+                    </span>
                   </div>
+
+                  <div className="info-item">
+                    <span className="info-label">
+                      Date
+                    </span>
+
+                    <span className="info-value">
+                      {data.date}
+                    </span>
+                  </div>
+
                 </div>
 
                 <div className="meter-container">
-                  <span className="info-label">Damage Severity Scale</span>
+
+                  <span className="info-label">
+                    Damage Severity Scale
+                  </span>
+
                   <div className="meter-bar">
+
                     <div
                       className="meter-pointer"
-                      style={{ left: severityInfo.position }}
+                      style={{
+                        left: severityInfo.position,
+                      }}
                     />
+
                   </div>
+
                   <div className="meter-labels">
                     <span>Low</span>
                     <span>Medium</span>
                     <span>High</span>
                     <span>Critical</span>
                   </div>
+
                 </div>
+
               </div>
 
             </div>
 
+            {/* AI MODEL RESULT */}
             <div className="issues-section">
-              <h3 className="issues-title">Detected Issues</h3>
+
+              <h3 className="issues-title">
+                AI Model Result
+              </h3>
+
               <div className="issue-tags">
-                <span className="issue-tag">• Cracks Detected</span>
-                <span className="issue-tag">• Structural Vulnerability</span>
-                <span className="issue-tag">• Edge Failure Risk</span>
+
+                <span className="issue-tag">
+                  • Damage severity classified by ResNet-50
+                </span>
+
+                <span className="issue-tag">
+                  • Confidence: {data.confidence}%
+                </span>
+
               </div>
+
             </div>
+
           </section>
+
         </div>
       </main>
     </>
