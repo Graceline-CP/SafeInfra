@@ -1,28 +1,36 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { reports } from "../data/mockData";
+import { useReports } from "../components/useReports";
+import { useAuth } from "../context/AuthContext";
+
+const formatDate = (d) =>
+  new Date(d).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 
 function MyUploads() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { reports, loading } = useReports();
+
+  const name = user?.displayName || "Authority";
 
   return (
     <div className="my-uploads-page">
-      {/* Header */}
       <header className="uploads-header">
         <div>
           <h1>My Uploads</h1>
-          <p>
-            View and manage previously uploaded infrastructure images
-          </p>
+          <p>View and manage previously uploaded infrastructure images</p>
         </div>
 
         <div className="authority">
-          <span>Authority</span>
-          <div className="authority-avatar">A</div>
+          <span>{name}</span>
+          <div className="authority-avatar">{name[0]}</div>
         </div>
       </header>
 
-      {/* Summary */}
       <div className="uploads-summary">
         <div className="summary-card">
           <span>Total Uploads</span>
@@ -43,7 +51,6 @@ function MyUploads() {
         </div>
       </div>
 
-      {/* Upload button */}
       <div className="uploads-action">
         <button
           type="button"
@@ -54,7 +61,6 @@ function MyUploads() {
         </button>
       </div>
 
-      {/* Upload list */}
       <section className="uploads-card">
         <div className="section-heading">
           <div>
@@ -64,19 +70,20 @@ function MyUploads() {
         </div>
 
         <div className="upload-list">
+          {loading && <p>Loading...</p>}
+
+          {!loading && reports.length === 0 && (
+            <p>No uploads yet. Click "Upload New Image" to add one.</p>
+          )}
+
           {reports.map((item) => (
             <div className="upload-item" key={item.id}>
-              <div className="upload-image-placeholder">
-                🖼
-              </div>
+              <div className="upload-image-placeholder">🖼</div>
 
               <div className="upload-details">
                 <div className="upload-title-row">
                   <h3>{item.location}</h3>
-
-                  <span
-                    className={`priority-badge ${item.priority.toLowerCase()}`}
-                  >
+                  <span className={`priority-badge ${item.priority?.toLowerCase()}`}>
                     {item.priority}
                   </span>
                 </div>
@@ -84,7 +91,7 @@ function MyUploads() {
                 <div className="upload-meta">
                   <span>{item.type}</span>
                   <span>•</span>
-                  <span>{item.date}</span>
+                  <span>{formatDate(item.date)}</span>
                   <span>•</span>
                   <span>Analysis Complete</span>
                 </div>

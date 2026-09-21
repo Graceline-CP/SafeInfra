@@ -1,5 +1,7 @@
 import React from 'react';
 import { useNavigate } from "react-router-dom";
+import { useReports } from "./useReports";
+import { useAuth } from "../context/AuthContext";
 const palette = {
   primary: '#2563EB',
   success: '#059669',
@@ -35,56 +37,34 @@ const priorityStyles = {
   },
 };
 
-// Fixed placeholder values from the dashboard mockup
-const summaryCards = [
-  {
-    label: 'Critical',
-    value: 12,
-    color: palette.danger,
-  },
-  {
-    label: 'High',
-    value: 28,
-    color: palette.warning,
-  },
-  {
-    label: 'Medium',
-    value: 35,
-    color: '#B7791F',
-  },
-  {
-    label: 'Low',
-    value: 18,
-    color: palette.success,
-  },
-];
 
-// Hardcoded sample locations
-const priorityLocations = [
-  {
-    location: 'Bridge - East Side',
-    priority: 'Critical',
-  },
-  {
-    location: 'Road - Riverside',
-    priority: 'High',
-  },
-  {
-    location: 'Building - Market Area',
-    priority: 'High',
-  },
-  {
-    location: 'Bridge - Old Town',
-    priority: 'Medium',
-  },
-  {
-    location: 'Road - Hill View',
-    priority: 'Medium',
-  },
-];
 
 function Dashboard() {
   const navigate = useNavigate();
+  const { reports, stats, loading } = useReports();
+  const { user } = useAuth();
+  const name = user?.displayName || "Authority";
+
+  const summaryCards = [
+    { label: 'Critical', value: stats.critical, color: palette.danger },
+    { label: 'High', value: stats.high, color: palette.warning },
+    { label: 'Medium', value: stats.medium, color: '#B7791F' },
+    { label: 'Low', value: stats.low, color: palette.success },
+  ];
+
+  const rank = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+  const priorityLocations = [...reports]
+    .sort(
+      (a, b) =>
+        (rank[a.priority] ?? 4) - (rank[b.priority] ?? 4) ||
+        new Date(b.date) - new Date(a.date)
+    )
+    .slice(0, 5)
+    .map((r) => ({
+      id: r.id,
+      location: `${r.type} - ${r.location}`,
+      priority: r.priority,
+    }));
   return (
     <>
       <style>{`
@@ -525,11 +505,8 @@ function Dashboard() {
             </div>
 
             <div className="authority">
-              <span>Authority</span>
-
-              <div className="avatar">
-                A
-              </div>
+              <span>{name}</span>
+              <div className="avatar">{name[0]}</div>
             </div>
           </header>
 
@@ -581,17 +558,15 @@ function Dashboard() {
                 <div className="water" />
                 <div className="water-small" />
 
-                <div className="road road-1" />
-                <div className="road road-2" />
-                <div className="road road-3" />
-                <div className="road road-4" />
                 <div className="road road-5" />
 
-                <div className="pin pin-critical pin-1" />
-                <div className="pin pin-medium pin-2" />
-                <div className="pin pin-low pin-3" />
-                <div className="pin pin-critical pin-4" />
-                <div className="pin pin-high pin-5" />
+                {priorityLocations.map((item, i) => (
+                  <div
+                    key={item.id}
+                    title={item.location}
+                    className={`pin pin-${item.priority?.toLowerCase()} pin-${i + 1}`}
+                  />
+                ))}
 
                 <div className="map-controls">
                   <button
@@ -628,23 +603,17 @@ function Dashboard() {
 
               <div className="priority-list">
 
+                {!loading && priorityLocations.length === 0 && (
+                  <p style={{ padding: 16, color: palette.muted, fontSize: '0.85rem' }}>
+                    No reports yet.
+                  </p>
+                )}
+
                 {priorityLocations.map((item, index) => (
-                  <div
-                    className="priority-item"
-                    key={item.location}
-                  >
-                    <span className="rank">
-                      {index + 1}.
-                    </span>
-
-                    <span className="location">
-                      {item.location}
-                    </span>
-
-                    <span
-                      className="badge"
-                      style={priorityStyles[item.priority]}
-                    >
+                  <div className="priority-item" key={item.id}>
+                    <span className="rank">{index + 1}.</span>
+                    <span className="location">{item.location}</span>
+                    <span className="badge" style={priorityStyles[item.priority]}>
                       {item.priority}
                     </span>
                   </div>

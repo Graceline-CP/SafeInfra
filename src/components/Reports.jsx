@@ -1,5 +1,5 @@
 import React from 'react';
-import { reports, dashboardStats } from '../data/mockData';
+import { useReports } from "../components/useReports";
 import { useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -96,6 +96,7 @@ const DownloadIcon = () => (
 );
 
 function Reports({ onViewAnalysis }) {
+  const { reports, stats: dashboardStats, loading } = useReports();
   const navigate = useNavigate();
   const handleExport = () => {
     const doc = new jsPDF();

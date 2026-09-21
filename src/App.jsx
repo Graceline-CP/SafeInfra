@@ -7,64 +7,27 @@ import Dashboard from "./components/Dashboard";
 import Reports from "./components/Reports";
 import Layout from "./components/Layout";
 import MyUploads from "./components/MyUploads";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+const Private = ({ children }) => (
+  <ProtectedRoute>
+    <Layout>{children}</Layout>
+  </ProtectedRoute>
+);
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-
-        {/* Login - NO SIDEBAR */}
+        {/* Login - no sidebar, not protected */}
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Upload */}
-        <Route
-          path="/upload"
-          element={
-            <Layout>
-              <Upload />
-            </Layout>
-          }
-        />
-
-        {/* Analysis */}
-        <Route
-          path="/analysis"
-          element={
-            <Layout>
-              <AIAnalysisResults />
-            </Layout>
-          }
-        />
-
-        {/* Dashboard */}
-        <Route
-          path="/dashboard"
-          element={
-            <Layout>
-              <Dashboard />
-            </Layout>
-          }
-        />
-
-        {/* Reports */}
-        <Route
-          path="/reports"
-          element={
-            <Layout>
-              <Reports />
-            </Layout>
-          }
-        />
-        <Route
-          path="/my-uploads"
-          element={
-            <Layout>
-              <MyUploads />
-            </Layout>
-          }
-        />
-
+        <Route path="/upload" element={<Private><Upload /></Private>} />
+        <Route path="/analysis" element={<Private><AIAnalysisResults /></Private>} />
+        <Route path="/dashboard" element={<Private><Dashboard /></Private>} />
+        <Route path="/reports" element={<Private><Reports /></Private>} />
+        <Route path="/my-uploads" element={<Private><MyUploads /></Private>} />
       </Routes>
     </BrowserRouter>
   );

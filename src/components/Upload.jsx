@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { addDoc, collection } from "firebase/firestore";
+import { db } from "../firebase";
+import { useAuth } from "../context/AuthContext";
 
 function Upload() {
   const navigate = useNavigate();
-
+  const { user } = useAuth();
   const [infrastructureType, setInfrastructureType] = useState("Bridge");
   const [location, setLocation] = useState("");
   const [date, setDate] = useState("");
@@ -56,7 +59,10 @@ function Upload() {
   // -----------------------------
 const handleSubmit = async (e) => {
   e.preventDefault();
-
+  if (!user) {
+    alert("Please log in first.");
+    return;
+  }
   if (!selectedFile) {
     alert("Please upload an infrastructure image.");
     return;
@@ -85,7 +91,24 @@ const handleSubmit = async (e) => {
     const result = await response.json();
 
     console.log("AI Analysis Result:", result);
+    const allowed = ["Critical", "High", "Medium", "Low"];
+    const clean = (v) => {
+      const s = String(v ?? "").toLowerCase();
+      return allowed.find((a) => a.toLowerCase() === s) || "Medium";
+    };
 
+    const severity = clean(result.severity);
+    const priority = clean(result.priority ?? result.severity);
+
+    const docRef = await addDoc(collection(db, "reports"), {
+      uid: user.uid,
+      location,
+      type: infrastructureType,
+      severity,
+      priority,
+      date: new Date(date).toISOString(),
+      description,
+    });
     // Store the AI result temporarily so the Analysis page can use it
     localStorage.setItem(
       "safeinfra_analysis",
