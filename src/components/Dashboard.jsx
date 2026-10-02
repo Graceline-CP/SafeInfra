@@ -1,645 +1,658 @@
-import React from 'react';
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useReports } from "./useReports";
 import { useAuth } from "../context/AuthContext";
-const palette = {
-  primary: '#2563EB',
-  success: '#059669',
-  warning: '#D97706',
-  danger: '#DC2626',
-  background: '#F9FAFB',
-  card: '#FFFFFF',
-  text: '#111827',
-  muted: '#6B7280',
-  radius: 12,
+
+import "leaflet/dist/leaflet.css";
+
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+} from "react-leaflet";
+
+import L from "leaflet";
+
+
+// ==========================================
+// MARKER ICON
+// ==========================================
+
+const createMarkerIcon = (priority) => {
+  const colors = {
+    Critical: "#DC2626",
+    High: "#D97706",
+    Medium: "#E3A928",
+    Low: "#059669",
+  };
+
+  return L.divIcon({
+    className: "safeinfra-marker",
+    html: `
+      <div style="
+        width: 18px;
+        height: 18px;
+        background: ${colors[priority] || "#2563EB"};
+        border: 3px solid white;
+        border-radius: 50%;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      "></div>
+    `,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
 };
 
-const priorityStyles = {
-  Critical: {
-    backgroundColor: 'rgba(220, 38, 38, 0.08)',
-    color: palette.danger,
-    border: '1px solid rgba(220, 38, 38, 0.2)',
-  },
-  High: {
-    backgroundColor: 'rgba(217, 119, 6, 0.08)',
-    color: palette.warning,
-    border: '1px solid rgba(217, 119, 6, 0.2)',
-  },
-  Medium: {
-    backgroundColor: 'rgba(217, 119, 6, 0.06)',
-    color: '#B7791F',
-    border: '1px solid rgba(217, 119, 6, 0.15)',
-  },
-  Low: {
-    backgroundColor: 'rgba(5, 150, 105, 0.08)',
-    color: palette.success,
-    border: '1px solid rgba(5, 150, 105, 0.2)',
-  },
+
+// ==========================================
+// KNOWN LOCATION COORDINATES
+// ==========================================
+
+const locationCoordinates = {
+  ramapuram: [13.0324, 80.1809],
+
+  rajasthan: [27.0238, 74.2179],
 };
+export default function Dashboard() {
 
-
-
-function Dashboard() {
   const navigate = useNavigate();
+
   const { reports, stats, loading } = useReports();
+
   const { user } = useAuth();
-  const name = user?.displayName || "Authority";
 
-  const summaryCards = [
-    { label: 'Critical', value: stats.critical, color: palette.danger },
-    { label: 'High', value: stats.high, color: palette.warning },
-    { label: 'Medium', value: stats.medium, color: '#B7791F' },
-    { label: 'Low', value: stats.low, color: palette.success },
-  ];
+  const name = user?.displayName || "Srinithi";
 
-  const rank = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+
+  // ==========================================
+  // PRIORITY ORDER
+  // ==========================================
+
+  const rank = {
+    Critical: 0,
+    High: 1,
+    Medium: 2,
+    Low: 3,
+  };
+
+
   const priorityLocations = [...reports]
     .sort(
       (a, b) =>
-        (rank[a.priority] ?? 4) - (rank[b.priority] ?? 4) ||
+        (rank[a.priority] ?? 4) -
+          (rank[b.priority] ?? 4) ||
         new Date(b.date) - new Date(a.date)
     )
     .slice(0, 5)
-    .map((r) => ({
-      id: r.id,
-      location: `${r.type} - ${r.location}`,
-      priority: r.priority,
-    }));
-  return (
-    <>
-      <style>{`
-        * {
-          box-sizing: border-box;
-        }
-
-        .dashboard-page {
-          min-height: 100vh;
-          background: ${palette.background};
-          color: ${palette.text};
-          font-family: -apple-system, BlinkMacSystemFont,
-            "Segoe UI", Roboto, sans-serif;
-          padding: 28px 24px;
-        }
-
-        .dashboard-shell {
-          max-width: 1360px;
-          margin: 0 auto;
-        }
-
-        /* Header */
-
-        .dashboard-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 24px;
-        }
-
-        .dashboard-title {
-          margin: 0;
-          font-size: 1.8rem;
-          font-weight: 700;
-        }
-
-        .dashboard-subtitle {
-          margin: 5px 0 0;
-          color: ${palette.muted};
-          font-size: 0.88rem;
-        }
-
-        .authority {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 0.88rem;
-          font-weight: 600;
-        }
-
-        .avatar {
-          width: 34px;
-          height: 34px;
-          border-radius: 50%;
-          background: ${palette.primary};
-          color: white;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 700;
-        }
-
-        /* Summary Cards */
-
-        .summary-grid {
-          display: grid;
-          grid-template-columns: repeat(4, 1fr);
-          gap: 16px;
-          margin-bottom: 24px;
-        }
-
-        .summary-card {
-          position: relative;
-          background: ${palette.card};
-          border: 1px solid rgba(17, 24, 39, 0.06);
-          border-radius: ${palette.radius}px;
-          padding: 18px;
-          min-height: 105px;
-          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-          overflow: hidden;
-        }
-
-        .summary-card::before {
-          content: "";
-          position: absolute;
-          left: 0;
-          top: 0;
-          width: 4px;
-          height: 100%;
-          background: var(--accent);
-        }
-
-        .summary-label {
-          display: block;
-          font-size: 0.76rem;
-          font-weight: 700;
-          color: var(--accent);
-          margin-bottom: 8px;
-        }
-
-        .summary-value {
-          margin: 0;
-          font-size: 1.9rem;
-          font-weight: 700;
-          line-height: 1;
-        }
-
-        .summary-detail {
-          margin-top: 7px;
-          color: ${palette.muted};
-          font-size: 0.76rem;
-        }
-
-        /* Main Content */
-
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: 1.55fr 0.85fr;
-          gap: 18px;
-        }
-
-        .dashboard-card {
-          background: ${palette.card};
-          border: 1px solid rgba(17, 24, 39, 0.06);
-          border-radius: ${palette.radius}px;
-          box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-          overflow: hidden;
-        }
-
-        .card-header {
-          padding: 18px 20px 15px;
-          border-bottom: 1px solid rgba(17, 24, 39, 0.06);
-        }
-
-        .card-title {
-          margin: 0;
-          font-size: 1.05rem;
-          font-weight: 700;
-        }
-
-        .card-subtitle {
-          margin: 5px 0 0;
-          color: ${palette.muted};
-          font-size: 0.8rem;
-        }
-
-        /* Static Map */
-
-        .map {
-          position: relative;
-          height: 360px;
-          overflow: hidden;
-
-          background:
-            linear-gradient(
-              135deg,
-              #e4eee2 0%,
-              #eef3e8 45%,
-              #dcebe1 100%
-            );
-        }
-
-        /* Water */
-
-        .water {
-          position: absolute;
-          right: -30px;
-          top: -20px;
-          width: 38%;
-          height: 120%;
-          background: rgba(164, 207, 224, 0.55);
-          border-radius: 50%;
-          transform: rotate(8deg);
-        }
-
-        .water-small {
-          position: absolute;
-          left: 42%;
-          bottom: -100px;
-          width: 25%;
-          height: 55%;
-          background: rgba(164, 207, 224, 0.4);
-          border-radius: 50%;
-        }
-
-        /* Static roads */
-
-        .road {
-          position: absolute;
-          height: 5px;
-          background: rgba(255, 255, 255, 0.95);
-          border-radius: 10px;
-          box-shadow: 0 0 0 1px rgba(120, 130, 120, 0.1);
-        }
-
-        .road-1 {
-          width: 90%;
-          left: -5%;
-          top: 45%;
-          transform: rotate(-18deg);
-        }
-
-        .road-2 {
-          width: 85%;
-          left: 0;
-          top: 65%;
-          transform: rotate(8deg);
-        }
-
-        .road-3 {
-          width: 75%;
-          left: 15%;
-          top: 30%;
-          transform: rotate(34deg);
-        }
-
-        .road-4 {
-          width: 65%;
-          left: 10%;
-          top: 75%;
-          transform: rotate(-28deg);
-        }
-
-        .road-5 {
-          width: 55%;
-          left: 25%;
-          top: 50%;
-          transform: rotate(60deg);
-        }
-
-        /* Map Pins */
-
-        .pin {
-          position: absolute;
-          width: 18px;
-          height: 18px;
-          border-radius: 50% 50% 50% 0;
-          transform: rotate(-45deg);
-          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.18);
-        }
-
-        .pin::after {
-          content: "";
-          position: absolute;
-          width: 6px;
-          height: 6px;
-          background: white;
-          border-radius: 50%;
-          top: 6px;
-          left: 6px;
-        }
-
-        .pin-critical {
-          background: ${palette.danger};
-        }
-
-        .pin-high {
-          background: ${palette.warning};
-        }
-
-        .pin-medium {
-          background: #E3A928;
-        }
-
-        .pin-low {
-          background: ${palette.success};
-        }
-
-        .pin-1 {
-          left: 27%;
-          top: 25%;
-        }
-
-        .pin-2 {
-          left: 48%;
-          top: 44%;
-        }
-
-        .pin-3 {
-          left: 70%;
-          top: 28%;
-        }
-
-        .pin-4 {
-          left: 14%;
-          top: 54%;
-        }
-
-        .pin-5 {
-          left: 31%;
-          top: 68%;
-        }
-
-        /* Map controls */
-
-        .map-controls {
-          position: absolute;
-          right: 12px;
-          bottom: 12px;
-          background: white;
-          border: 1px solid rgba(17, 24, 39, 0.1);
-          border-radius: 6px;
-          overflow: hidden;
-        }
-
-        .map-control {
-          display: block;
-          width: 32px;
-          height: 32px;
-          border: none;
-          background: white;
-          font-size: 1.1rem;
-          cursor: default;
-        }
-
-        .map-control + .map-control {
-          border-top: 1px solid rgba(17, 24, 39, 0.08);
-        }
-
-        /* Priority List */
-
-        .priority-list {
-          padding: 4px 20px 10px;
-        }
-
-        .priority-item {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          min-height: 58px;
-          border-bottom: 1px solid rgba(17, 24, 39, 0.06);
-        }
-
-        .priority-item:last-child {
-          border-bottom: none;
-        }
-
-        .rank {
-          width: 22px;
-          color: ${palette.muted};
-          font-size: 0.8rem;
-          font-weight: 600;
-        }
-
-        .location {
-          flex: 1;
-          min-width: 0;
-          font-size: 0.84rem;
-          font-weight: 600;
-        }
-
-        .badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          padding: 5px 9px;
-          font-size: 0.65rem;
-          font-weight: 700;
-          white-space: nowrap;
-        }
-
-        /* Responsive */
-        /* Reports Button */
-
-        .dashboard-actions {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 20px;
-        }
-
-        .reports-button {
-        padding: 12px 24px;
-        border: none;
-        border-radius: 10px;
-        background: #2563EB;
-        color: white;
-        font-size: 0.9rem;
-        font-weight: 600;
-        cursor: pointer;
-        box-shadow: 0 4px 10px rgba(37, 99, 235, 0.15);
-        transition: all 0.2s ease;
-        }
-
-        .reports-button:hover {
-        background: #1D4ED8;
-        transform: translateY(-1px);
-        }
-        @media (max-width: 900px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr;
-          }
-        }
-
-        @media (max-width: 700px) {
-          .dashboard-page {
-            padding: 20px 14px;
-          }
-
-          .summary-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-          }
-
-          .authority {
-            display: none;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .summary-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-
-          .summary-card {
-            padding: 15px;
-          }
-
-          .map {
-            height: 280px;
-          }
-        }
-      `}</style>
-
-      <div className="dashboard-page">
-        <div className="dashboard-shell">
-
-          {/* Header */}
-          <header className="dashboard-header">
-            <div>
-              <h1 className="dashboard-title">
-                Priority Dashboard
-              </h1>
-
-              <p className="dashboard-subtitle">
-                Infrastructure damage priority overview
-              </p>
-            </div>
-
-            <div className="authority">
-              <span>{name}</span>
-              <div className="avatar">{name[0]}</div>
-            </div>
-          </header>
-
-          {/* Summary Cards */}
-          <section className="summary-grid">
-
-            {summaryCards.map((card) => (
-              <article
-                key={card.label}
-                className="summary-card"
-                style={{
-                  '--accent': card.color,
-                }}
-              >
-                <span className="summary-label">
-                  {card.label}
-                </span>
-
-                <p className="summary-value">
-                  {card.value}
-                </p>
-
-                <div className="summary-detail">
-                  Locations
-                </div>
-              </article>
-            ))}
-
-          </section>
-
-          {/* Dashboard Content */}
-          <section className="dashboard-grid">
-
-            {/* Priority Map */}
-            <article className="dashboard-card">
-
-              <div className="card-header">
-                <h2 className="card-title">
-                  Priority Map
-                </h2>
-
-                <p className="card-subtitle">
-                  Infrastructure locations by priority
-                </p>
-              </div>
-
-              <div className="map">
-
-                <div className="water" />
-                <div className="water-small" />
-
-                <div className="road road-5" />
-
-                {priorityLocations.map((item, i) => (
-                  <div
-                    key={item.id}
-                    title={item.location}
-                    className={`pin pin-${item.priority?.toLowerCase()} pin-${i + 1}`}
-                  />
-                ))}
-
-                <div className="map-controls">
-                  <button
-                    className="map-control"
-                    type="button"
-                  >
-                    +
-                  </button>
-
-                  <button
-                    className="map-control"
-                    type="button"
-                  >
-                    −
-                  </button>
-                </div>
-
-              </div>
-
-            </article>
-
-            {/* Top Priority Locations */}
-            <article className="dashboard-card">
-
-              <div className="card-header">
-                <h2 className="card-title">
-                  Top Priority Locations
-                </h2>
-
-                <p className="card-subtitle">
-                  Highest priority infrastructure
-                </p>
-              </div>
-
-              <div className="priority-list">
-
-                {!loading && priorityLocations.length === 0 && (
-                  <p style={{ padding: 16, color: palette.muted, fontSize: '0.85rem' }}>
-                    No reports yet.
-                  </p>
-                )}
-
-                {priorityLocations.map((item, index) => (
-                  <div className="priority-item" key={item.id}>
-                    <span className="rank">{index + 1}.</span>
-                    <span className="location">{item.location}</span>
-                    <span className="badge" style={priorityStyles[item.priority]}>
-                      {item.priority}
-                    </span>
-                  </div>
-                ))}
-
-              </div>
-
-            </article>
-
-          </section>
-
-          {/* Reports Button */}
-          <div className="dashboard-actions">
-            <button
-              type="button"
-              className="reports-button"
-              onClick={() => navigate("/reports")}
-            >
-              View Reports →
-            </button>
+    .map((r) => {
+
+      const location =
+        String(r.location || "").trim();
+
+      const key =
+        location.toLowerCase();
+
+
+      let coordinates =
+        locationCoordinates[key];
+
+
+      // ------------------------------------------
+      // Handle "Ramapuram, Chennai"
+      // ------------------------------------------
+
+      if (!coordinates && key.includes("ramapuram")) {
+        coordinates =
+          locationCoordinates.ramapuram;
+      }
+
+
+      // ------------------------------------------
+      // Handle "Rajasthan"
+      // ------------------------------------------
+
+      if (!coordinates && key.includes("rajasthan")) {
+        coordinates =
+          locationCoordinates.rajasthan;
+      }
+
+
+      return {
+        id: r.id,
+        type: r.type,
+        location: location,
+        priority: r.priority,
+        date: r.date,
+        coordinates: coordinates,
+      };
+
+    });
+
+
+  // ==========================================
+  // PRIORITY COLORS
+  // ==========================================
+
+  const priorityStyles = {
+
+    Critical: {
+      background: "#FEE2E2",
+      color: "#B91C1C",
+    },
+
+    High: {
+      background: "#FEF3C7",
+      color: "#B45309",
+    },
+
+    Medium: {
+      background: "#FEF9C3",
+      color: "#A16207",
+    },
+
+    Low: {
+      background: "#D1FAE5",
+      color: "#047857",
+    },
+
+  };
+
+
+  if (loading) {
+
+    return (
+      <div
+        style={{
+          padding: "40px",
+          textAlign: "center",
+        }}
+      >
+        Loading dashboard...
+      </div>
+    );
+
+  }
+    return (
+
+    <div
+      style={{
+        padding: "24px",
+        background: "#f8fafc",
+        minHeight: "100vh",
+      }}
+    >
+
+      {/* ================================= */}
+      {/* HEADER */}
+      {/* ================================= */}
+
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "24px",
+        }}
+      >
+
+        <div>
+
+          <h1
+            style={{
+              margin: "0 0 6px",
+              fontSize: "28px",
+              color: "#111827",
+            }}
+          >
+            Welcome, {name}
+          </h1>
+
+          <p
+            style={{
+              margin: 0,
+              color: "#6B7280",
+            }}
+          >
+            Infrastructure monitoring and
+            disaster response dashboard
+          </p>
+
+        </div>
+
+
+        <button
+          onClick={() => navigate("/reports")}
+          style={{
+            background: "#2563EB",
+            color: "white",
+            border: "none",
+            padding: "10px 18px",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "600",
+          }}
+        >
+          View Reports
+        </button>
+
+      </div>
+
+
+      {/* ================================= */}
+      {/* SUMMARY CARDS */}
+      {/* ================================= */}
+
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns:
+            "repeat(4, minmax(0, 1fr))",
+          gap: "16px",
+          marginBottom: "24px",
+        }}
+      >
+
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+
+          <div style={{ color: "#6B7280" }}>
+            Total Reports
+          </div>
+
+          <div
+            style={{
+              fontSize: "28px",
+              fontWeight: "700",
+              marginTop: "8px",
+            }}
+          >
+            {stats?.total ?? reports.length}
           </div>
 
         </div>
-      </div>
-    </>
-  );
-}
 
-export default Dashboard;
+
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+
+          <div style={{ color: "#6B7280" }}>
+            Critical
+          </div>
+
+          <div
+            style={{
+              fontSize: "28px",
+              fontWeight: "700",
+              color: "#DC2626",
+              marginTop: "8px",
+            }}
+          >
+            {stats?.critical ??
+              reports.filter(
+                (r) => r.priority === "Critical"
+              ).length}
+          </div>
+
+        </div>
+
+
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+
+          <div style={{ color: "#6B7280" }}>
+            High Priority
+          </div>
+
+          <div
+            style={{
+              fontSize: "28px",
+              fontWeight: "700",
+              color: "#D97706",
+              marginTop: "8px",
+            }}
+          >
+            {stats?.high ??
+              reports.filter(
+                (r) => r.priority === "High"
+              ).length}
+          </div>
+
+        </div>
+
+
+        <div
+          style={{
+            background: "white",
+            padding: "20px",
+            borderRadius: "12px",
+            boxShadow:
+              "0 2px 8px rgba(0,0,0,0.06)",
+          }}
+        >
+
+          <div style={{ color: "#6B7280" }}>
+            Locations
+          </div>
+
+          <div
+            style={{
+              fontSize: "28px",
+              fontWeight: "700",
+              marginTop: "8px",
+            }}
+          >
+            {priorityLocations.length}
+          </div>
+
+        </div>
+
+      </div>
+
+
+      {/* ================================= */}
+      {/* MAP SECTION */}
+      {/* ================================= */}
+
+      <div
+        style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "20px",
+          marginBottom: "24px",
+          boxShadow:
+            "0 2px 8px rgba(0,0,0,0.06)",
+        }}
+      >
+
+        <h2
+          style={{
+            margin: "0 0 6px",
+            fontSize: "20px",
+          }}
+        >
+          Infrastructure Priority Map
+        </h2>
+
+        <p
+          style={{
+            margin: "0 0 16px",
+            color: "#6B7280",
+            fontSize: "13px",
+          }}
+        >
+          Real-world locations of reported
+          infrastructure issues
+        </p>
+
+
+        {/* ================================= */}
+        {/* LEAFLET MAP */}
+        {/* ================================= */}
+
+        <div
+          style={{
+            width: "100%",
+            height: "450px",
+            borderRadius: "10px",
+            overflow: "hidden",
+            position: "relative",
+          }}
+        >
+
+          <MapContainer
+            center={[20.5937, 78.9629]}
+            zoom={5}
+            scrollWheelZoom={true}
+            style={{
+              width: "100%",
+              height: "100%",
+            }}
+          >
+
+            <TileLayer
+              attribution='&copy; OpenStreetMap contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+
+            {priorityLocations.map((item) => {
+
+              if (!item.coordinates) {
+                return null;
+              }
+
+
+              return (
+
+                <Marker
+                  key={item.id}
+                  position={item.coordinates}
+                  icon={createMarkerIcon(
+                    item.priority
+                  )}
+                >
+
+                  <Popup>
+
+                    <div
+                      style={{
+                        minWidth: "190px",
+                      }}
+                    >
+
+                      <strong
+                        style={{
+                          fontSize: "15px",
+                        }}
+                      >
+                        {item.type}
+                      </strong>
+
+                      <div
+                        style={{
+                          marginTop: "8px",
+                        }}
+                      >
+                        <b>Location:</b>{" "}
+                        {item.location}
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: "6px",
+                        }}
+                      >
+                        <b>Priority:</b>{" "}
+
+                        <span
+                          style={{
+                            color:
+                              priorityStyles[
+                                item.priority
+                              ]?.color,
+                            fontWeight: "700",
+                          }}
+                        >
+                          {item.priority}
+                        </span>
+
+                      </div>
+
+                      <div
+                        style={{
+                          marginTop: "6px",
+                          fontSize: "11px",
+                          color: "#6B7280",
+                        }}
+                      >
+                        Coordinates:
+                        <br />
+
+                        {item.coordinates[0].toFixed(4)}
+                        {", "}
+                        {item.coordinates[1].toFixed(4)}
+
+                      </div>
+
+                    </div>
+
+                  </Popup>
+
+                </Marker>
+
+              );
+
+            })}
+
+          </MapContainer>
+
+        </div>
+
+      </div>
+            {/* ================================= */}
+      {/* TOP PRIORITY LOCATIONS */}
+      {/* ================================= */}
+
+      <div
+        style={{
+          background: "white",
+          borderRadius: "12px",
+          padding: "20px",
+          boxShadow:
+            "0 2px 8px rgba(0,0,0,0.06)",
+        }}
+      >
+
+        <h2
+          style={{
+            margin: "0 0 6px",
+            fontSize: "20px",
+          }}
+        >
+          Top Priority Locations
+        </h2>
+
+        <p
+          style={{
+            margin: "0 0 16px",
+            color: "#6B7280",
+            fontSize: "13px",
+          }}
+        >
+          Recently reported infrastructure
+          requiring attention
+        </p>
+
+
+        {priorityLocations.length === 0 ? (
+
+          <div
+            style={{
+              padding: "25px",
+              textAlign: "center",
+              color: "#6B7280",
+            }}
+          >
+            No reports available.
+          </div>
+
+        ) : (
+
+          priorityLocations.map((item) => {
+
+            const style =
+              priorityStyles[item.priority] ||
+              priorityStyles.Low;
+
+
+            return (
+
+              <div
+                key={item.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "14px",
+                  border:
+                    "1px solid #E5E7EB",
+                  borderRadius: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+
+                <div>
+
+                  <div
+                    style={{
+                      fontWeight: "600",
+                    }}
+                  >
+                    {item.type} - {item.location}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "#6B7280",
+                      marginTop: "4px",
+                    }}
+                  >
+                    {item.location}
+                  </div>
+
+                </div>
+
+
+                <div
+                  style={{
+                    background:
+                      style.background,
+                    color: style.color,
+                    padding: "6px 10px",
+                    borderRadius: "999px",
+                    fontSize: "12px",
+                    fontWeight: "700",
+                  }}
+                >
+                  {item.priority}
+                </div>
+
+              </div>
+
+            );
+
+          })
+
+        )}
+
+      </div>
+
+    </div>
+
+  );
+
+}
