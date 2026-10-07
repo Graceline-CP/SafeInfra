@@ -1,9 +1,9 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useReports } from "./useReports";
 import { useAuth } from "../context/AuthContext";
 
 import "leaflet/dist/leaflet.css";
+import "./Dashboard.css";
 
 import {
   MapContainer,
@@ -22,9 +22,9 @@ import L from "leaflet";
 const createMarkerIcon = (priority) => {
   const colors = {
     Critical: "#DC2626",
-    High: "#D97706",
-    Medium: "#E3A928",
-    Low: "#059669",
+    High: "#F97316",
+    Medium: "#EAB308",
+    Low: "#16A34A",
   };
 
   return L.divIcon({
@@ -33,7 +33,7 @@ const createMarkerIcon = (priority) => {
       <div style="
         width: 18px;
         height: 18px;
-        background: ${colors[priority] || "#2563EB"};
+        background: ${colors[priority] || "#06B6D4"};
         border: 3px solid white;
         border-radius: 50%;
         box-shadow: 0 2px 6px rgba(0,0,0,0.35);
@@ -55,6 +55,14 @@ const locationCoordinates = {
 
   rajasthan: [27.0238, 74.2179],
 };
+
+const formatDate = (date) =>
+  new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+
 export default function Dashboard() {
 
   const navigate = useNavigate();
@@ -138,521 +146,166 @@ export default function Dashboard() {
   const priorityStyles = {
 
     Critical: {
-      background: "#FEE2E2",
+      background: "#FEF2F2",
       color: "#B91C1C",
     },
 
     High: {
-      background: "#FEF3C7",
-      color: "#B45309",
+      background: "#FFF7ED",
+      color: "#C2410C",
     },
 
     Medium: {
-      background: "#FEF9C3",
+      background: "#FEFCE8",
       color: "#A16207",
     },
 
     Low: {
-      background: "#D1FAE5",
-      color: "#047857",
+      background: "#F0FDF4",
+      color: "#15803D",
     },
 
   };
 
 
   if (loading) {
-
     return (
-      <div
-        style={{
-          padding: "40px",
-          textAlign: "center",
-        }}
-      >
+      <div className="dashboard-page dashboard-loading" role="status" aria-live="polite">
+        <span className="dashboard-loading-indicator" aria-hidden="true" />
         Loading dashboard...
       </div>
     );
-
   }
-    return (
 
-    <div
-      style={{
-        padding: "24px",
-        background: "#f8fafc",
-        minHeight: "100vh",
-      }}
-    >
-
-      {/* ================================= */}
-      {/* HEADER */}
-      {/* ================================= */}
-
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
-
-        <div>
-
-          <h1
-            style={{
-              margin: "0 0 6px",
-              fontSize: "28px",
-              color: "#111827",
-            }}
-          >
-            Welcome, {name}
-          </h1>
-
-          <p
-            style={{
-              margin: 0,
-              color: "#6B7280",
-            }}
-          >
-            Infrastructure monitoring and
-            disaster response dashboard
+  return (
+    <div className="dashboard-page">
+      <header className="dashboard-header">
+        <div className="dashboard-heading">
+          <p className="dashboard-eyebrow">SAFEINFRA / OPERATIONS</p>
+          <h1 className="sf-page-title">Welcome, {name}</h1>
+          <p className="dashboard-subtitle">
+            Infrastructure monitoring and disaster response dashboard
           </p>
-
         </div>
-
-
         <button
+          className="sf-button sf-button-primary dashboard-reports-button"
+          type="button"
           onClick={() => navigate("/reports")}
-          style={{
-            background: "#2563EB",
-            color: "white",
-            border: "none",
-            padding: "10px 18px",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "600",
-          }}
         >
-          View Reports
+          View reports
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M5 12h14m-6-6 6 6-6 6" />
+          </svg>
         </button>
+      </header>
 
-      </div>
+      <section className="dashboard-metrics" aria-label="Report summary">
+        <article className="dashboard-metric sf-card dashboard-metric--cyan">
+          <div className="dashboard-metric-heading"><span className="dashboard-metric-dot" aria-hidden="true" /><span className="dashboard-metric-label">Total reports</span></div>
+          <strong className="dashboard-metric-value">{stats?.total ?? reports.length}</strong>
+          <span className="dashboard-metric-detail">All inspection records</span>
+        </article>
+        <article className="dashboard-metric sf-card dashboard-metric--critical">
+          <div className="dashboard-metric-heading"><span className="dashboard-metric-dot" aria-hidden="true" /><span className="dashboard-metric-label">Critical</span></div>
+          <strong className="dashboard-metric-value">{stats?.critical ?? reports.filter((report) => report.priority === "Critical").length}</strong>
+          <span className="dashboard-metric-detail">Immediate attention</span>
+        </article>
+        <article className="dashboard-metric sf-card dashboard-metric--high">
+          <div className="dashboard-metric-heading"><span className="dashboard-metric-dot" aria-hidden="true" /><span className="dashboard-metric-label">High priority</span></div>
+          <strong className="dashboard-metric-value">{stats?.high ?? reports.filter((report) => report.priority === "High").length}</strong>
+          <span className="dashboard-metric-detail">Priority follow-up</span>
+        </article>
+        <article className="dashboard-metric sf-card dashboard-metric--locations">
+          <div className="dashboard-metric-heading"><span className="dashboard-metric-dot" aria-hidden="true" /><span className="dashboard-metric-label">Locations</span></div>
+          <strong className="dashboard-metric-value">{priorityLocations.length}</strong>
+          <span className="dashboard-metric-detail">In current priority list</span>
+        </article>
+      </section>
 
-
-      {/* ================================= */}
-      {/* SUMMARY CARDS */}
-      {/* ================================= */}
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns:
-            "repeat(4, minmax(0, 1fr))",
-          gap: "16px",
-          marginBottom: "24px",
-        }}
-      >
-
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.06)",
-          }}
-        >
-
-          <div style={{ color: "#6B7280" }}>
-            Total Reports
+      <div className="dashboard-content-grid">
+        <section className="dashboard-panel dashboard-map-panel sf-card" aria-labelledby="dashboard-map-title">
+          <div className="dashboard-panel-header">
+            <div>
+              <p className="dashboard-section-kicker">GEOGRAPHIC VIEW</p>
+              <h2 className="sf-section-title" id="dashboard-map-title">Infrastructure priority map</h2>
+              <p className="sf-meta dashboard-panel-description">Reported infrastructure issues by location</p>
+            </div>
+            <div className="dashboard-legend" aria-label="Map priority legend">
+              {Object.entries({ Critical: "#DC2626", High: "#F97316", Medium: "#EAB308", Low: "#16A34A" }).map(([priority, color]) => (
+                <span className="dashboard-legend-item" key={priority}>
+                  <span className="dashboard-legend-dot" style={{ "--legend-color": color }} aria-hidden="true" />
+                  {priority}
+                </span>
+              ))}
+            </div>
           </div>
 
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              marginTop: "8px",
-            }}
-          >
-            {stats?.total ?? reports.length}
-          </div>
+          <div className="dashboard-map" aria-label="Map showing known infrastructure report locations">
+            <MapContainer center={[20.5937, 78.9629]} zoom={5} scrollWheelZoom={true}>
+              <TileLayer
+                attribution='&copy; OpenStreetMap contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {priorityLocations.map((item) => {
+                if (!item.coordinates) return null;
 
-        </div>
-
-
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.06)",
-          }}
-        >
-
-          <div style={{ color: "#6B7280" }}>
-            Critical
-          </div>
-
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              color: "#DC2626",
-              marginTop: "8px",
-            }}
-          >
-            {stats?.critical ??
-              reports.filter(
-                (r) => r.priority === "Critical"
-              ).length}
-          </div>
-
-        </div>
-
-
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.06)",
-          }}
-        >
-
-          <div style={{ color: "#6B7280" }}>
-            High Priority
-          </div>
-
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              color: "#D97706",
-              marginTop: "8px",
-            }}
-          >
-            {stats?.high ??
-              reports.filter(
-                (r) => r.priority === "High"
-              ).length}
-          </div>
-
-        </div>
-
-
-        <div
-          style={{
-            background: "white",
-            padding: "20px",
-            borderRadius: "12px",
-            boxShadow:
-              "0 2px 8px rgba(0,0,0,0.06)",
-          }}
-        >
-
-          <div style={{ color: "#6B7280" }}>
-            Locations
-          </div>
-
-          <div
-            style={{
-              fontSize: "28px",
-              fontWeight: "700",
-              marginTop: "8px",
-            }}
-          >
-            {priorityLocations.length}
-          </div>
-
-        </div>
-
-      </div>
-
-
-      {/* ================================= */}
-      {/* MAP SECTION */}
-      {/* ================================= */}
-
-      <div
-        style={{
-          background: "white",
-          borderRadius: "12px",
-          padding: "20px",
-          marginBottom: "24px",
-          boxShadow:
-            "0 2px 8px rgba(0,0,0,0.06)",
-        }}
-      >
-
-        <h2
-          style={{
-            margin: "0 0 6px",
-            fontSize: "20px",
-          }}
-        >
-          Infrastructure Priority Map
-        </h2>
-
-        <p
-          style={{
-            margin: "0 0 16px",
-            color: "#6B7280",
-            fontSize: "13px",
-          }}
-        >
-          Real-world locations of reported
-          infrastructure issues
-        </p>
-
-
-        {/* ================================= */}
-        {/* LEAFLET MAP */}
-        {/* ================================= */}
-
-        <div
-          style={{
-            width: "100%",
-            height: "450px",
-            borderRadius: "10px",
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
-
-          <MapContainer
-            center={[20.5937, 78.9629]}
-            zoom={5}
-            scrollWheelZoom={true}
-            style={{
-              width: "100%",
-              height: "100%",
-            }}
-          >
-
-            <TileLayer
-              attribution='&copy; OpenStreetMap contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-
-
-            {priorityLocations.map((item) => {
-
-              if (!item.coordinates) {
-                return null;
-              }
-
-
-              return (
-
-                <Marker
-                  key={item.id}
-                  position={item.coordinates}
-                  icon={createMarkerIcon(
-                    item.priority
-                  )}
-                >
-
-                  <Popup>
-
-                    <div
-                      style={{
-                        minWidth: "190px",
-                      }}
-                    >
-
-                      <strong
-                        style={{
-                          fontSize: "15px",
-                        }}
-                      >
-                        {item.type}
-                      </strong>
-
-                      <div
-                        style={{
-                          marginTop: "8px",
-                        }}
-                      >
-                        <b>Location:</b>{" "}
-                        {item.location}
+                return (
+                  <Marker key={item.id} position={item.coordinates} icon={createMarkerIcon(item.priority)}>
+                    <Popup>
+                      <div className="dashboard-map-popup">
+                        <strong>{item.type}</strong>
+                        <div><b>Location:</b> {item.location}</div>
+                        <div>
+                          <b>Priority:</b>{" "}
+                          <span style={{ color: priorityStyles[item.priority]?.color, fontWeight: 700 }}>
+                            {item.priority}
+                          </span>
+                        </div>
+                        <small>Coordinates: {item.coordinates[0].toFixed(4)}, {item.coordinates[1].toFixed(4)}</small>
                       </div>
+                    </Popup>
+                  </Marker>
+                );
+              })}
+            </MapContainer>
+          </div>
+        </section>
 
-                      <div
-                        style={{
-                          marginTop: "6px",
-                        }}
-                      >
-                        <b>Priority:</b>{" "}
-
-                        <span
-                          style={{
-                            color:
-                              priorityStyles[
-                                item.priority
-                              ]?.color,
-                            fontWeight: "700",
-                          }}
-                        >
-                          {item.priority}
-                        </span>
-
-                      </div>
-
-                      <div
-                        style={{
-                          marginTop: "6px",
-                          fontSize: "11px",
-                          color: "#6B7280",
-                        }}
-                      >
-                        Coordinates:
-                        <br />
-
-                        {item.coordinates[0].toFixed(4)}
-                        {", "}
-                        {item.coordinates[1].toFixed(4)}
-
-                      </div>
-
-                    </div>
-
-                  </Popup>
-
-                </Marker>
-
-              );
-
-            })}
-
-          </MapContainer>
-
-        </div>
-
-      </div>
-            {/* ================================= */}
-      {/* TOP PRIORITY LOCATIONS */}
-      {/* ================================= */}
-
-      <div
-        style={{
-          background: "white",
-          borderRadius: "12px",
-          padding: "20px",
-          boxShadow:
-            "0 2px 8px rgba(0,0,0,0.06)",
-        }}
-      >
-
-        <h2
-          style={{
-            margin: "0 0 6px",
-            fontSize: "20px",
-          }}
-        >
-          Top Priority Locations
-        </h2>
-
-        <p
-          style={{
-            margin: "0 0 16px",
-            color: "#6B7280",
-            fontSize: "13px",
-          }}
-        >
-          Recently reported infrastructure
-          requiring attention
-        </p>
-
-
-        {priorityLocations.length === 0 ? (
-
-          <div
-            style={{
-              padding: "25px",
-              textAlign: "center",
-              color: "#6B7280",
-            }}
-          >
-            No reports available.
+        <section className="dashboard-panel dashboard-reports-panel sf-card" aria-labelledby="dashboard-reports-title">
+          <div className="dashboard-panel-header dashboard-reports-heading">
+            <div>
+              <p className="dashboard-section-kicker">ATTENTION QUEUE</p>
+              <h2 className="sf-section-title" id="dashboard-reports-title">Recent priority reports</h2>
+              <p className="sf-meta dashboard-panel-description">Highest priority first, then newest</p>
+            </div>
+            <span className="dashboard-report-count" aria-label={`${priorityLocations.length} reports shown`}>
+              {priorityLocations.length}
+            </span>
           </div>
 
-        ) : (
-
-          priorityLocations.map((item) => {
-
-            const style =
-              priorityStyles[item.priority] ||
-              priorityStyles.Low;
-
-
-            return (
-
-              <div
-                key={item.id}
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  padding: "14px",
-                  border:
-                    "1px solid #E5E7EB",
-                  borderRadius: "10px",
-                  marginBottom: "10px",
-                }}
-              >
-
-                <div>
-
-                  <div
-                    style={{
-                      fontWeight: "600",
-                    }}
-                  >
-                    {item.type} - {item.location}
+          {priorityLocations.length === 0 ? (
+            <div className="dashboard-empty-state">
+              <span className="dashboard-empty-mark" aria-hidden="true">—</span>
+              <p>No reports available.</p>
+            </div>
+          ) : (
+            <ul className="dashboard-report-list">
+              {priorityLocations.map((item) => (
+                <li className="dashboard-report-row" key={item.id}>
+                  <span className={`dashboard-report-marker dashboard-report-marker--${String(item.priority || "").toLowerCase()}`} aria-hidden="true" />
+                  <div className="dashboard-report-details">
+                    <strong className="dashboard-report-location">{item.location}</strong>
+                    <span className="dashboard-report-meta">{item.type}<span aria-hidden="true">·</span>{formatDate(item.date)}</span>
                   </div>
-
-                  <div
-                    style={{
-                      fontSize: "12px",
-                      color: "#6B7280",
-                      marginTop: "4px",
-                    }}
-                  >
-                    {item.location}
-                  </div>
-
-                </div>
-
-
-                <div
-                  style={{
-                    background:
-                      style.background,
-                    color: style.color,
-                    padding: "6px 10px",
-                    borderRadius: "999px",
-                    fontSize: "12px",
-                    fontWeight: "700",
-                  }}
-                >
-                  {item.priority}
-                </div>
-
-              </div>
-
-            );
-
-          })
-
-        )}
-
+                  <span className={`sf-badge sf-badge-${String(item.priority || "medium").toLowerCase()}`}>
+                    {item.priority}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
-
     </div>
-
   );
-
 }

@@ -1,65 +1,76 @@
-import React from 'react';
+import { useState } from 'react';
 import { useReports } from "../components/useReports";
 import { useNavigate } from "react-router-dom";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 const palette = {
-  primary: '#2563EB',
-  success: '#059669',
-  warning: '#D97706',
+  primary: '#06B6D4',
+  success: '#16A34A',
+  warning: '#F97316',
   danger: '#DC2626',
-  background: '#F9FAFB',
+  medium: '#EAB308',
+  background: '#F1F5F9',
   card: '#FFFFFF',
-  text: '#111827',
-  muted: '#6B7280',
-  radius: 12,
+  text: '#0F172A',
+  muted: '#64748B',
+  border: '#E2E8F0',
+  graphite: '#111827',
+  radius: 8,
   inputRadius: 8,
 };
 
 const severityStyles = {
   Critical: {
     backgroundColor: 'rgba(220, 38, 38, 0.1)',
-    color: palette.danger,
+    color: '#B91C1C',
+    '--status-color': palette.danger,
     border: '1px solid rgba(220, 38, 38, 0.2)',
   },
   High: {
-    backgroundColor: 'rgba(217, 119, 6, 0.1)',
-    color: palette.warning,
-    border: '1px solid rgba(217, 119, 6, 0.2)',
+    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+    color: '#C2410C',
+    '--status-color': palette.warning,
+    border: '1px solid rgba(249, 115, 22, 0.22)',
   },
   Medium: {
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-    color: palette.primary,
-    border: '1px solid rgba(37, 99, 235, 0.2)',
+    backgroundColor: 'rgba(234, 179, 8, 0.14)',
+    color: '#854D0E',
+    '--status-color': palette.medium,
+    border: '1px solid rgba(234, 179, 8, 0.28)',
   },
   Low: {
-    backgroundColor: 'rgba(5, 150, 105, 0.1)',
-    color: palette.success,
-    border: '1px solid rgba(5, 150, 105, 0.2)',
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    color: '#15803D',
+    '--status-color': palette.success,
+    border: '1px solid rgba(22, 163, 74, 0.22)',
   },
 };
 
 const priorityStyles = {
   Critical: {
     backgroundColor: 'rgba(220, 38, 38, 0.1)',
-    color: palette.danger,
+    color: '#B91C1C',
+    '--status-color': palette.danger,
     border: '1px solid rgba(220, 38, 38, 0.2)',
   },
   High: {
-    backgroundColor: 'rgba(217, 119, 6, 0.1)',
-    color: palette.warning,
-    border: '1px solid rgba(217, 119, 6, 0.2)',
+    backgroundColor: 'rgba(249, 115, 22, 0.1)',
+    color: '#C2410C',
+    '--status-color': palette.warning,
+    border: '1px solid rgba(249, 115, 22, 0.22)',
   },
   Medium: {
-    backgroundColor: 'rgba(37, 99, 235, 0.1)',
-    color: palette.primary,
-    border: '1px solid rgba(37, 99, 235, 0.2)',
+    backgroundColor: 'rgba(234, 179, 8, 0.14)',
+    color: '#854D0E',
+    '--status-color': palette.medium,
+    border: '1px solid rgba(234, 179, 8, 0.28)',
   },
   Low: {
-    backgroundColor: 'rgba(5, 150, 105, 0.1)',
-    color: palette.success,
-    border: '1px solid rgba(5, 150, 105, 0.2)',
+    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+    color: '#15803D',
+    '--status-color': palette.success,
+    border: '1px solid rgba(22, 163, 74, 0.22)',
   },
 };
 
@@ -98,6 +109,27 @@ const DownloadIcon = () => (
 function Reports({ onViewAnalysis }) {
   const { reports, stats: dashboardStats, loading } = useReports();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [severityFilter, setSeverityFilter] = useState('All');
+  const [page, setPage] = useState(1);
+  const pageSize = 10;
+
+  const filteredReports = reports.filter((report) => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = !query || [
+      report.id,
+      report.location,
+      report.type,
+      report.severity,
+      report.priority,
+    ].some((value) => String(value || '').toLowerCase().includes(query));
+
+    return matchesSearch && (severityFilter === 'All' || report.severity === severityFilter);
+  });
+  const pageCount = Math.max(1, Math.ceil(filteredReports.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleReports = filteredReports.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const handleExport = () => {
     const doc = new jsPDF();
 
@@ -120,7 +152,7 @@ function Reports({ onViewAnalysis }) {
         r.priority,
         formatDate(r.date),
       ]),
-      headStyles: { fillColor: [37, 99, 235] },
+      headStyles: { fillColor: [17, 24, 39] },
       styles: { fontSize: 9 },
     });
 
@@ -204,7 +236,7 @@ function Reports({ onViewAnalysis }) {
       label: 'Medium',
       value: dashboardStats.medium,
       detail: 'Scheduled assessment',
-      accent: palette.primary,
+      accent: palette.medium,
     },
     {
       label: 'Low',
@@ -217,14 +249,14 @@ function Reports({ onViewAnalysis }) {
   return (
     <>
       <style>{`
-        * { box-sizing: border-box; }
+        .reports-page, .reports-page * { box-sizing: border-box; }
 
         .reports-page {
           min-height: 100vh;
           background: ${palette.background};
           color: ${palette.text};
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          padding: 32px 24px;
+          font-family: var(--sf-font-sans);
+          padding: 32px 40px 48px;
         }
 
         .reports-shell {
@@ -242,10 +274,17 @@ function Reports({ onViewAnalysis }) {
 
         .reports-title {
           margin: 0;
-          font-size: clamp(1.9rem, 2.5vw, 2.7rem);
+          font-size: 30px;
           line-height: 1.2;
-          font-weight: 700;
+          font-weight: 600;
           color: ${palette.text};
+        }
+
+        .reports-description {
+          margin: 8px 0 0;
+          color: ${palette.muted};
+          font-size: 14px;
+          line-height: 1.5;
         }
 
         .reports-actions {
@@ -274,8 +313,8 @@ function Reports({ onViewAnalysis }) {
 
         .primary-button {
           background: ${palette.primary};
-          color: #ffffff;
-          box-shadow: 0 8px 20px rgba(37, 99, 235, 0.18);
+          color: ${palette.graphite};
+          box-shadow: 0 4px 12px rgba(6, 182, 212, 0.2);
         }
 
         .ghost-button:hover,
@@ -285,14 +324,14 @@ function Reports({ onViewAnalysis }) {
 
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(5, minmax(180px, 1fr));
+          grid-template-columns: repeat(5, minmax(0, 1fr));
           gap: 16px;
           margin-bottom: 24px;
         }
 
         .stats-card {
           background: ${palette.card};
-          border: 1px solid rgba(17, 24, 39, 0.06);
+          border: 1px solid ${palette.border};
           border-radius: ${palette.radius}px;
           padding: 20px 18px;
           box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
@@ -339,7 +378,7 @@ function Reports({ onViewAnalysis }) {
 
         .table-card {
           background: ${palette.card};
-          border: 1px solid rgba(17, 24, 39, 0.06);
+          border: 1px solid ${palette.border};
           border-radius: ${palette.radius}px;
           box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
           overflow: hidden;
@@ -351,7 +390,7 @@ function Reports({ onViewAnalysis }) {
           align-items: center;
           gap: 16px;
           padding: 22px 24px 16px;
-          border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+          border-bottom: 1px solid ${palette.border};
         }
 
         .table-title {
@@ -377,8 +416,8 @@ function Reports({ onViewAnalysis }) {
           font-weight: 700;
           letter-spacing: 0.02em;
           text-transform: uppercase;
-          background: rgba(37, 99, 235, 0.08);
-          color: ${palette.primary};
+          background: #CFFAFE;
+          color: #155E75;
         }
 
         .reports-table-wrap {
@@ -400,12 +439,12 @@ function Reports({ onViewAnalysis }) {
           text-transform: uppercase;
           text-align: left;
           padding: 14px 24px;
-          border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+          border-bottom: 1px solid ${palette.border};
         }
 
         .reports-table tbody td {
           padding: 16px 24px;
-          border-bottom: 1px solid rgba(17, 24, 39, 0.06);
+          border-bottom: 1px solid ${palette.border};
           color: ${palette.text};
           font-size: 0.95rem;
           vertical-align: middle;
@@ -417,18 +456,37 @@ function Reports({ onViewAnalysis }) {
         }
 
         .reports-table tbody tr:hover {
-          background: rgba(37, 99, 235, 0.03);
+          background: #F0FDFA;
         }
 
         .status-badge {
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          gap: 6px;
           border-radius: 999px;
           padding: 7px 10px;
           font-size: 0.74rem;
           font-weight: 700;
           letter-spacing: 0.02em;
+          white-space: nowrap;
+        }
+
+        .status-badge::before {
+          width: 7px;
+          height: 7px;
+          flex: 0 0 7px;
+          border-radius: 50%;
+          background: var(--status-color, currentColor);
+          content: '';
+        }
+
+        .report-id-cell {
+          max-width: 150px;
+          overflow: hidden;
+          color: #334155 !important;
+          font-variant-numeric: tabular-nums;
+          text-overflow: ellipsis;
           white-space: nowrap;
         }
 
@@ -446,7 +504,7 @@ function Reports({ onViewAnalysis }) {
         }
 
         .action-button:hover {
-          background-color: rgba(37, 99, 235, 0.1);
+          background-color: rgba(6, 182, 212, 0.12);
         }
 
         .action-button svg {
@@ -454,9 +512,115 @@ function Reports({ onViewAnalysis }) {
           stroke-width: 1.5;
         }
 
+        .reports-toolbar {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          gap: 16px;
+          margin: 0 0 16px;
+        }
+
+        .reports-search-wrap {
+          flex: 1;
+          max-width: 440px;
+        }
+
+        .reports-filter-wrap {
+          width: 190px;
+        }
+
+        .reports-control-label {
+          display: block;
+          margin-bottom: 6px;
+          color: ${palette.muted};
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        .reports-search,
+        .reports-filter {
+          width: 100%;
+          min-height: 42px;
+          padding: 9px 12px;
+          border: 1px solid ${palette.border};
+          border-radius: 8px;
+          background: ${palette.card};
+          color: ${palette.text};
+          font: inherit;
+          font-size: 14px;
+        }
+
+        .reports-search:focus,
+        .reports-filter:focus {
+          border-color: ${palette.primary};
+          outline: 3px solid rgba(6, 182, 212, 0.2);
+          outline-offset: 1px;
+        }
+
+        .reports-count {
+          align-self: center;
+          color: ${palette.muted};
+          font-size: 12px;
+          white-space: nowrap;
+        }
+
+        .reports-table td:last-child,
+        .reports-table th:last-child {
+          width: 72px;
+          text-align: center;
+        }
+
+        .table-state {
+          padding: 48px 20px;
+          color: ${palette.muted};
+          text-align: center;
+          font-size: 14px;
+        }
+
+        .table-pagination {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          padding: 14px 20px;
+          border-top: 1px solid ${palette.border};
+          color: ${palette.muted};
+          font-size: 12px;
+        }
+
+        .pagination-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .pagination-button {
+          min-width: 72px;
+          min-height: 36px;
+          padding: 7px 11px;
+          border: 1px solid ${palette.border};
+          border-radius: 7px;
+          background: ${palette.card};
+          color: ${palette.text};
+          font: inherit;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+        }
+
+        .pagination-button:hover:not(:disabled) {
+          border-color: ${palette.primary};
+          background: #ECFEFF;
+        }
+
+        .pagination-button:disabled {
+          color: #94A3B8;
+          cursor: not-allowed;
+        }
+
         @media (max-width: 1024px) {
+          .reports-page { padding: 28px 24px 40px; }
           .stats-grid {
-            grid-template-columns: repeat(3, minmax(160px, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 14px;
           }
         }
@@ -464,18 +628,22 @@ function Reports({ onViewAnalysis }) {
         @media (max-width: 768px) {
           .reports-page { padding: 20px 14px; }
           .reports-header { flex-direction: column; align-items: flex-start; }
-          .stats-grid { grid-template-columns: repeat(2, minmax(140px, 1fr)); gap: 12px; }
+          .reports-toolbar { align-items: stretch; flex-direction: column; }
+          .reports-search-wrap, .reports-filter-wrap { width: 100%; max-width: none; }
+          .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
           .stats-card { padding: 16px 14px; }
           .stats-label { font-size: 0.7rem; margin-bottom: 8px; }
           .stats-value { font-size: clamp(1.3rem, 1.8vw, 1.6rem); }
           .table-header { flex-direction: column; align-items: flex-start; padding: 16px 16px 12px; }
           .reports-table thead th, .reports-table tbody td { padding-left: 16px; padding-right: 16px; }
+          .table-pagination { align-items: flex-start; flex-direction: column; padding: 14px 16px; }
         }
 
         @media (max-width: 640px) {
           .reports-page { padding: 16px 12px; }
           .stats-grid { grid-template-columns: 1fr; }
-          .reports-table { min-width: 640px; }
+          .reports-table { min-width: 760px; }
+          .stats-card { min-height: 125px; }
         }
       `}</style>
 
@@ -484,6 +652,9 @@ function Reports({ onViewAnalysis }) {
           <header className="reports-header">
             <div>
               <h1 className="reports-title">Reports</h1>
+              <p className="reports-description">
+                Review and export infrastructure inspection records.
+              </p>
             </div>
 
             <div className="reports-actions">
@@ -514,13 +685,55 @@ function Reports({ onViewAnalysis }) {
             ))}
           </section>
 
+          <div className="reports-toolbar" role="search">
+            <div className="reports-search-wrap">
+              <label className="reports-control-label" htmlFor="reports-search">
+                Search reports
+              </label>
+              <input
+                id="reports-search"
+                className="reports-search"
+                type="search"
+                value={searchQuery}
+                onChange={(event) => {
+                  setSearchQuery(event.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search ID, location, type, severity..."
+              />
+            </div>
+            <div className="reports-filter-wrap">
+              <label className="reports-control-label" htmlFor="reports-severity">
+                Severity
+              </label>
+              <select
+                id="reports-severity"
+                className="reports-filter"
+                value={severityFilter}
+                onChange={(event) => {
+                  setSeverityFilter(event.target.value);
+                  setPage(1);
+                }}
+              >
+                <option>All</option>
+                <option>Critical</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </div>
+            <span className="reports-count" aria-live="polite">
+              {filteredReports.length} of {reports.length} reports
+            </span>
+          </div>
+
           <section className="table-card" aria-label="Inspection report list">
             <div className="table-header">
               <div>
                 <h2 className="table-title">Inspection Records</h2>
                 <p className="table-subtitle">SafeInfra Infrastructure Assessment Database</p>
               </div>
-              <span className="status-pill">Active</span>
+              <span className="status-pill">{reports.length} records</span>
             </div>
 
             <div className="reports-table-wrap">
@@ -537,33 +750,27 @@ function Reports({ onViewAnalysis }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.slice(0, 20).map((item) => (
+                  {loading ? (
+                    <tr><td className="table-state" colSpan="7" role="status">Loading reports...</td></tr>
+                  ) : visibleReports.length === 0 ? (
+                    <tr>
+                      <td className="table-state" colSpan="7">
+                        {reports.length === 0 ? "No reports have been submitted yet." : "No reports match these filters."}
+                      </td>
+                    </tr>
+                  ) : visibleReports.map((item) => (
                     <tr key={item.id} onClick={() => onViewAnalysis && onViewAnalysis(item)}>
-                      <td>{item.id}</td>
+                      <td className="report-id-cell">{item.id}</td>
                       <td>{item.location}</td>
                       <td>{item.type}</td>
                       <td>
-                        <span
-                          className="status-badge"
-                          style={severityStyles[item.severity] || {
-                            backgroundColor: 'rgba(107, 114, 128, 0.08)',
-                            color: palette.muted,
-                            border: '1px solid rgba(107, 114, 128, 0.2)',
-                          }}
-                        >
-                          {item.severity}
+                        <span className="status-badge" style={severityStyles[item.severity] || { backgroundColor: '#F1F5F9', color: palette.muted, border: `1px solid ${palette.border}` }}>
+                          {item.severity || "Unknown"}
                         </span>
                       </td>
                       <td>
-                        <span
-                          className="status-badge"
-                          style={priorityStyles[item.priority] || {
-                            backgroundColor: 'rgba(107, 114, 128, 0.08)',
-                            color: palette.muted,
-                            border: '1px solid rgba(107, 114, 128, 0.2)',
-                          }}
-                        >
-                          {item.priority}
+                        <span className="status-badge" style={priorityStyles[item.priority] || { backgroundColor: '#F1F5F9', color: palette.muted, border: `1px solid ${palette.border}` }}>
+                          {item.priority || "Unknown"}
                         </span>
                       </td>
                       <td>{formatDate(item.date)}</td>
@@ -571,9 +778,10 @@ function Reports({ onViewAnalysis }) {
                         <button
                           className="action-button"
                           type="button"
+                          aria-label={`Download report ${item.id}`}
                           title="Download report"
-                          onClick={(e) => {
-                            e.stopPropagation();
+                          onClick={(event) => {
+                            event.stopPropagation();
                             handleDownloadReport(item);
                           }}
                         >
@@ -584,6 +792,27 @@ function Reports({ onViewAnalysis }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+            <div className="table-pagination">
+              <span>Page {currentPage} of {pageCount}</span>
+              <div className="pagination-actions">
+                <button
+                  className="pagination-button"
+                  type="button"
+                  disabled={currentPage <= 1 || loading}
+                  onClick={() => setPage(currentPage - 1)}
+                >
+                  Previous
+                </button>
+                <button
+                  className="pagination-button"
+                  type="button"
+                  disabled={currentPage >= pageCount || loading}
+                  onClick={() => setPage(currentPage + 1)}
+                >
+                  Next
+                </button>
+              </div>
             </div>
           </section>
         </div>

@@ -1,0 +1,288 @@
+.analysis-page.analysis-page {
+  min-height: 100vh;
+  padding: 32px 40px 48px;
+  background: #F1F5F9;
+  color: #0F172A;
+  font-family: var(--sf-font-sans);
+}
+
+.analysis-page .analysis-shell {
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.analysis-page .analysis-header {
+  align-items: flex-end;
+  margin-bottom: 24px;
+}
+
+.analysis-page .analysis-title {
+  color: #0F172A;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.analysis-page .analysis-subtitle {
+  color: #64748B;
+  font-size: 14px;
+}
+
+.analysis-page .back-button {
+  min-height: 36px;
+  color: #0E7490;
+}
+
+.analysis-page .back-button:hover {
+  color: #155E75;
+}
+
+.analysis-page .inspection-id {
+  border-color: #E2E8F0;
+  border-radius: 8px;
+  color: #475569;
+}
+
+.analysis-page .analysis-card {
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 5px 16px rgba(15, 23, 42, 0.04);
+}
+
+.analysis-page .analysis-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.analysis-page .analysis-image-section {
+  min-width: 0;
+  margin: 0;
+  padding: 24px;
+  border-right: 1px solid #E2E8F0;
+}
+
+.analysis-page .analysis-image-card {
+  min-width: 0;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.analysis-page .analysis-image,
+.analysis-page .no-image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #E2E8F0;
+}
+
+.no-image {
+  min-height: 190px;
+  color: #64748B;
+  font-size: 13px;
+}
+
+.analysis-page .image-info h3 {
+  margin-bottom: 8px;
+  color: #0F172A;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.analysis-page .image-info p {
+  color: #64748B;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.analysis-page .details-panel {
+  min-width: 0;
+  padding: 24px;
+}
+
+.analysis-page .details-title {
+  margin-bottom: 18px;
+  color: #0F172A;
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.analysis-page .info-grid {
+  gap: 12px;
+}
+
+.analysis-page .info-item {
+  min-width: 0;
+  border-color: #E2E8F0;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+
+.analysis-page .info-label {
+  color: #64748B;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+
+.analysis-page .info-value {
+  color: #0F172A;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.analysis-severity {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.analysis-severity::before {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: currentColor;
+  content: "";
+}
+
+.analysis-severity--critical { color: #DC2626; }
+.analysis-severity--high { color: #F97316; }
+.analysis-severity--medium { color: #A16207; }
+.analysis-severity--low { color: #16A34A; }
+.analysis-severity--unknown { color: #64748B; }
+
+.confidence-meter {
+  margin-top: 18px;
+}
+
+.confidence-meter-track {
+  height: 8px;
+  margin-top: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #E2E8F0;
+}
+
+.confidence-meter-value {
+  height: 100%;
+  border-radius: inherit;
+  background: #06B6D4;
+}
+
+.analysis-page .meter-bar {
+  height: 8px;
+  background: linear-gradient(90deg, #16A34A 0%, #EAB308 45%, #F97316 72%, #DC2626 100%);
+}
+
+.analysis-page .meter-pointer {
+  border-top-color: #111827;
+}
+
+.analysis-page .meter-labels {
+  font-size: 11px;
+}
+
+.analysis-page .issues-section {
+  border-top-color: #E2E8F0;
+}
+
+.analysis-page .issues-title {
+  color: #0F172A;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.analysis-notes {
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.analysis-empty-page {
+  display: grid;
+  min-height: 70vh;
+  place-items: center;
+}
+
+.analysis-empty-state {
+  width: min(100%, 480px);
+  padding: 36px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background: #FFFFFF;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  text-align: center;
+}
+
+.analysis-empty-state h1 {
+  margin: 0;
+  color: #0F172A;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.analysis-empty-state p {
+  margin: 10px 0 22px;
+  color: #64748B;
+  font-size: 14px;
+}
+
+.analysis-empty-state .sf-button {
+  text-decoration: none;
+}
+
+@media (max-width: 850px) {
+  .analysis-page.analysis-page {
+    padding: 26px 24px 40px;
+  }
+
+  .analysis-page .analysis-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analysis-page .analysis-image-section {
+    border-right: 0;
+    border-bottom: 1px solid #E2E8F0;
+  }
+}
+
+@media (max-width: 560px) {
+  .analysis-page {
+    padding: 20px 16px 32px;
+  }
+
+  .analysis-page .analysis-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .analysis-page .analysis-image-section,
+  .analysis-page .details-panel,
+  .analysis-page .issues-section {
+    padding: 18px;
+  }
+
+  .analysis-page .info-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .analysis-empty-state {
+    padding: 24px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analysis-page *, .analysis-page *::before, .analysis-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

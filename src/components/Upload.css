@@ -1,0 +1,170 @@
+.upload-page {
+  min-height: 100vh;
+  background: #F1F5F9;
+  color: #0F172A;
+}
+
+.upload-page > header {
+  background-color: #111827;
+}
+
+.upload-page main {
+  padding-top: 28px;
+  padding-bottom: 40px;
+}
+
+.upload-page section {
+  border-color: #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 5px 16px rgba(15, 23, 42, 0.04);
+}
+
+.upload-page section > div:first-child {
+  border-color: #E2E8F0;
+}
+
+.upload-page [class~="bg-blue-50"] {
+  background-color: #CFFAFE;
+}
+
+.upload-page input:not([type="file"]),
+.upload-page select,
+.upload-page textarea {
+  min-height: 44px;
+  border-color: #CBD5E1;
+  border-radius: 8px;
+  background-color: #F8FAFC;
+  color: #0F172A;
+}
+
+.upload-page textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.upload-page input:focus,
+.upload-page select:focus,
+.upload-page textarea:focus {
+  border-color: #06B6D4;
+  background-color: #FFFFFF;
+  outline: 3px solid rgba(6, 182, 212, 0.2);
+  outline-offset: 1px;
+}
+
+.upload-dropzone {
+  position: relative;
+  min-height: 310px;
+  border-color: #A5F3FC;
+  background: #F0FDFA;
+  border-radius: 8px;
+  transition: border-color 150ms ease, background-color 150ms ease;
+}
+
+.upload-dropzone:hover,
+.upload-dropzone:focus-within {
+  border-color: #06B6D4;
+  background: #ECFEFF;
+}
+
+.upload-dropzone:focus-within {
+  outline: 3px solid rgba(6, 182, 212, 0.32);
+  outline-offset: 3px;
+}
+
+.upload-file-input {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.upload-choose-button {
+  background: #06B6D4;
+  color: #0F172A;
+  border-radius: 8px;
+}
+
+.upload-submit {
+  min-height: 46px;
+  border-radius: 8px;
+  background: #06B6D4;
+  color: #0F172A;
+}
+
+.upload-submit:hover:not(:disabled) {
+  background: #0891B2;
+  color: #FFFFFF;
+}
+
+.upload-submit:disabled {
+  cursor: wait;
+}
+
+.upload-error-banner {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  background: #FEF2F2;
+  color: #991B1B;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.upload-page img[alt="Infrastructure preview"] {
+  max-height: 440px;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  object-fit: contain;
+  background: #F8FAFC;
+}
+
+@media (max-width: 700px) {
+  .upload-page main {
+    padding: 20px 16px 32px;
+  }
+
+  .upload-page > header > div.relative {
+    padding: 28px 20px;
+  }
+
+  .upload-page form > .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+
+  .upload-page section > .p-6 {
+    padding: 18px;
+  }
+
+  .upload-dropzone {
+    min-height: 270px;
+  }
+
+  .upload-page .mt-6.flex.justify-end {
+    position: sticky;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    z-index: 5;
+    justify-content: stretch;
+    padding: 10px 0;
+    background: rgba(241, 245, 249, 0.94);
+    backdrop-filter: blur(8px);
+  }
+
+  .upload-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upload-page *,
+  .upload-page *::before,
+  .upload-page *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
